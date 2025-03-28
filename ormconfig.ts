@@ -7,9 +7,9 @@ const AppDataSource = new DataSource({
   type: 'mysql',
   host: 'localhost',
   port: 3306,
-  username: 'kiet',
-  password: 'password',
-  database: 'cnpm',
+  username: 'root',
+  password: '123456',
+  database: 'cnpm_drinkmanagement',
   entities: [Permission, Role, User], // Thêm tất cả các entity vào đây
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
