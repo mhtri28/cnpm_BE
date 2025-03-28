@@ -1,9 +1,10 @@
 import { CreateDateColumn, DeleteDateColumn, UpdateDateColumn } from 'typeorm';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Role } from '../../roles/entities/role.entity';
 
-@Entity()
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn({ type: 'integer', unsigned: true })
+  @PrimaryGeneratedColumn({ type: 'integer', unsigned: true,  })
   id: number;
 
   @Column({ length: 50 })
@@ -26,4 +27,11 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @ManyToOne(() => Role, (role) => role.users)
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
+
+  @Column({ type: 'integer', unsigned: true })
+  role_id: number;
 }

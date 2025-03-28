@@ -1,5 +1,7 @@
-import { User } from 'src/users/entities/user.entity';
 import { DataSource } from 'typeorm';
+import { User } from './src/users/entities/user.entity';
+import { Permission } from './src/permissions/entities/permission.entity';
+import { Role } from './src/roles/entities/role.entity';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -8,7 +10,7 @@ const AppDataSource = new DataSource({
   username: 'kiet',
   password: 'password',
   database: 'cnpm',
-  entities: [User], // Thêm tất cả các entity vào đây
+  entities: [Permission, Role, User], // Thêm tất cả các entity vào đây
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
 });
