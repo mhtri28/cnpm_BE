@@ -1,9 +1,9 @@
 import { DataSource } from 'typeorm';
-import AppDataSource from '../../../ormconfig';
 import { permissionSeeder } from './permission.seeder';
 import { roleSeeder } from './role.seeder';
 import { userSeeder } from './user.seeder';
-
+import { supplierSeeder } from './supplier.seeder';
+import AppDataSource from '../../../ormconfig';
 const runSeeders = async () => {
   try {
     // Kết nối database
@@ -14,6 +14,7 @@ const runSeeders = async () => {
     await permissionSeeder(AppDataSource);
     await roleSeeder(AppDataSource);
     await userSeeder(AppDataSource);
+    await supplierSeeder(AppDataSource);
 
     console.log('Seeding completed successfully');
     process.exit(0);
