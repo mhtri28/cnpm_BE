@@ -43,7 +43,7 @@ cp .env.example .env
 ```
 
 ## Khởi tạo database
-0. Thay đỏi file env để kết nối với database
+0. Thay đôi file .env để kết nối với database
 
 
 1. Chạy migrations để tạo cấu trúc database:
@@ -52,7 +52,8 @@ cp .env.example .env
 npm run migration:run
 ```
 
-1.1 Xóa tất cả bảng trong database để reset
+1.1 Xóa tất cả bảng trong database để reset:
+```bash
 npm run migration:drop
 ```
 
