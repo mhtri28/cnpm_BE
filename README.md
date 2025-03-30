@@ -50,6 +50,10 @@ cp .env.example .env
 npm run migration:run
 ```
 
+1.1 Xóa tất cả bảng trong database để reset
+npm run migration:drop
+```
+
 2. Chạy seeders để tạo dữ liệu mẫu:
 
 ```bash
