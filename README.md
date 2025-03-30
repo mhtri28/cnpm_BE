@@ -43,6 +43,8 @@ cp .env.example .env
 ```
 
 ## Khởi tạo database
+0. Thay đỏi file env để kết nối với database
+
 
 1. Chạy migrations để tạo cấu trúc database:
 
