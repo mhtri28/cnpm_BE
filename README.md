@@ -41,27 +41,61 @@ DATABASE_NAME=your_database
 JWT_SECRET=your_jwt_secret
 ```
 
+## Xác thực và Phân quyền
+
+### JWT Token
+
+Hệ thống sử dụng JWT (JSON Web Token) để xác thực người dùng. Khi đăng nhập thành công, hệ thống sẽ trả về 2 loại token:
+
+1. **Access Token**:
+
+   - Thời gian sống ngắn (mặc định 15 phút)
+   - Được sử dụng để truy cập các API được bảo vệ
+   - Chứa thông tin người dùng (id, email, role)
+   - Được gửi trong header `Authorization: Bearer <access_token>`
+
+2. **Refresh Token**:
+   - Thời gian sống dài (mặc định 7 ngày)
+   - Dùng để lấy access token mới khi access token hết hạn
+   - Không nên sử dụng để truy cập API
+   - Được lưu trữ an toàn ở client (httpOnly cookie)
+
+### Quy trình xác thực:
+
+1. Đăng nhập với email/password
+2. Hệ thống trả về access token và refresh token
+3. Sử dụng access token để gọi API
+4. Khi access token hết hạn:
+   - Gọi API `/auth/refresh` với refresh token
+   - Hệ thống trả về access token mới
+5. Khi đăng xuất:
+   - Gọi API `/auth/logout`
+   - Access token sẽ bị đưa vào blacklist
+
 ## Quy ước code
 
 ### Quy ước đặt tên
 
-- **TypeScript/JavaScript**: Sử dụng camelCase cho tên biến, hàm và thuộc tính
+- **TypeScript/JavaScript**: Sử dụng camelCase cho tất cả tên biến, hàm, thuộc tính và cột trong database
+
   ```typescript
+  // Tên biến và hàm
   const userName = 'John';
   function getUserById() {}
-  class UserService {}
-  ```
-- **Database**: Sử dụng snake_case cho tên cột và bảng
-  ```sql
-  CREATE TABLE user_roles (
-    user_id INT,
-    role_id INT
-  );
-  ```
-- **TypeORM**: Tự động map giữa camelCase (TypeScript) và snake_case (Database)
-  ```typescript
-  @Column({ name: 'user_name' })
-  userName: string;
+
+  // Entity
+  @Entity('users')
+  export class User {
+    @Column()
+    firstName: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @ManyToOne(() => Role)
+    @JoinColumn({ name: 'roleId' })
+    role: Role;
+  }
   ```
 
 ## Quản lý Database
