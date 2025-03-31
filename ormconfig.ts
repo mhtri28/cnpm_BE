@@ -4,6 +4,8 @@ import { User } from './src/users/entities/user.entity';
 import { Permission } from './src/permissions/entities/permission.entity';
 import { Role } from './src/roles/entities/role.entity';
 import { Supplier } from './src/suppliers/entities/supplier.entity';
+import { Order } from './src/orders/entities/order.entity';
+import { OrderItem } from './src/orders/entities/order-item.entity';
 
 config(); // Load environment variables from .env file
 
@@ -14,7 +16,7 @@ const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: [Permission, Role, User, Supplier],
+  entities: [Permission, Role, User, Supplier, Order, OrderItem],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
 });

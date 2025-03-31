@@ -2,13 +2,11 @@ import { DataSource } from 'typeorm';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
 export const supplierSeeder = async (dataSource: DataSource) => {
     const supplierRepository = dataSource.getRepository(Supplier);
-    
-
 
     const suppliers = [
         {
             name: 'Công ty TNHH Thực phẩm An Khang',
-            phone: '0123456789',
+            phone: '0123450089',
             email: 'ankhang@example.com',
             address: '123 Đường Lê Lợi, Quận 1, TP.HCM'
         },

@@ -10,6 +10,8 @@ import { User } from './users/entities/user.entity';
 import { Role } from './roles/entities/role.entity';
 import { Permission } from './permissions/entities/permission.entity';
 import { Supplier } from './suppliers/entities/supplier.entity';
+import { Order } from './orders/entities/order.entity';
+import { OrderItem } from './orders/entities/order-item.entity';
 import { config } from 'dotenv';
 import { AuthModule } from './auth/auth.module';
 
@@ -25,7 +27,7 @@ config();
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
-      entities: [User, Role, Permission, Supplier],
+      entities: [User, Role, Permission, Supplier, Order, OrderItem],
       synchronize: false,
     }),
     RolesModule,

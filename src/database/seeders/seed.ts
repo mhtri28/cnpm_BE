@@ -3,6 +3,7 @@ import { permissionSeeder } from './permission.seeder';
 import { roleSeeder } from './role.seeder';
 import { userSeeder } from './user.seeder';
 import { supplierSeeder } from './supplier.seeder';
+import { orderSeeder } from './order.seeder';
 import AppDataSource from '../../../ormconfig';
 const runSeeders = async () => {
   try {
@@ -15,6 +16,7 @@ const runSeeders = async () => {
     await roleSeeder(AppDataSource);
     await userSeeder(AppDataSource);
     await supplierSeeder(AppDataSource);
+    await orderSeeder(AppDataSource);
 
     console.log('Seeding completed successfully');
     process.exit(0);
