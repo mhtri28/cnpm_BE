@@ -11,6 +11,7 @@ import { Role } from './roles/entities/role.entity';
 import { Permission } from './permissions/entities/permission.entity';
 import { Supplier } from './suppliers/entities/supplier.entity';
 import { config } from 'dotenv';
+import { AuthModule } from './auth/auth.module';
 
 config();
 
@@ -31,6 +32,7 @@ config();
     PermissionsModule,
     UsersModule,
     SupplierModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

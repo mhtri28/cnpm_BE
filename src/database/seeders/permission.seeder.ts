@@ -27,6 +27,10 @@ export const permissionSeeder = async (dataSource: DataSource) => {
     { name: 'view-inventory', description: 'Xem tồn kho' },
     { name: 'create-inventory', description: 'Tạo phiếu nhập kho' },
     { name: 'approve-inventory', description: 'Duyệt phiếu nhập kho' },
+
+    // Thêm permissions cho pha chế
+    { name: 'view-orders', description: 'Xem danh sách yêu cầu pha chế' },
+    { name: 'update-order-status', description: 'Cập nhật trạng thái đồ uống' },
   ];
 
   for (const permission of permissions) {
