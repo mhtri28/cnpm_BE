@@ -17,19 +17,6 @@ export const roleSeeder = async (dataSource: DataSource) => {
       permissions: permissions
     },
     {
-      name: 'Sales',
-      description: 'Nhân viên bán hàng',
-      permissions: await permissionRepository.find({
-        where: [
-          { name: 'view-products' },
-          { name: 'view-orders' },
-          { name: 'create-orders' },
-          { name: 'edit-orders' },
-          { name: 'delete-orders' }
-        ]
-      })
-    },
-    {
       name: 'Inventory',
       description: 'Nhân viên kho',
       permissions: await permissionRepository.find({
@@ -37,6 +24,27 @@ export const roleSeeder = async (dataSource: DataSource) => {
           { name: 'view-inventory' },
           { name: 'create-inventory' },
           { name: 'approve-inventory' },
+          { name: 'view-products' }
+        ]
+      })
+    },
+    {
+      name: 'Waiter',
+      description: 'Nhân viên phục vụ',
+      permissions: await permissionRepository.find({
+        where: [
+          { name: 'view-orders' },
+          { name: 'update-order-status' }
+        ]
+      })
+    },
+    {
+      name: 'Bartender',
+      description: 'Nhân viên pha chế',
+      permissions: await permissionRepository.find({
+        where: [
+          { name: 'view-orders' },
+          { name: 'update-order-status' },
           { name: 'view-products' }
         ]
       })

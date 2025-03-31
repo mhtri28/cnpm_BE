@@ -9,10 +9,11 @@ export const userSeeder = async (dataSource: DataSource) => {
 
   // Tìm roles
   const adminRole = await roleRepository.findOneBy({ name: 'Admin' });
-  const salesRole = await roleRepository.findOneBy({ name: 'Sales' });
+  const waiterRole = await roleRepository.findOneBy({ name: 'Waiter' });
+  const bartenderRole = await roleRepository.findOneBy({ name: 'Bartender' });
   const inventoryRole = await roleRepository.findOneBy({ name: 'Inventory' });
 
-  if (!adminRole || !salesRole || !inventoryRole) {
+  if (!adminRole || !waiterRole || !bartenderRole || !inventoryRole) {
     throw new Error('Required roles not found in database');
   }
 
@@ -29,11 +30,18 @@ export const userSeeder = async (dataSource: DataSource) => {
       role_id: adminRole.id
     },
     {
-      name: 'Sales User',
-      email: 'sales@example.com',
+      name: 'Waiter User',
+      email: 'waiter@example.com',
       password: hashedPassword,
       phone: '0123456788',
-      role_id: salesRole.id
+      role_id: waiterRole.id
+    },
+    {
+      name: 'Bartender User',
+      email: 'bartender@example.com',
+      password: hashedPassword,
+      phone: '0123456787',
+      role_id: bartenderRole.id
     },
     {
       name: 'Inventory User',
