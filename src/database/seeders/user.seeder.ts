@@ -26,7 +26,7 @@ export const userSeeder = async (dataSource: DataSource) => {
       name: 'Admin User',
       email: 'admin@example.com',
       password: hashedPassword,
-      phone: '0123456789',
+      phone: '0123056789',
       role_id: adminRole.id
     },
     {
@@ -47,11 +47,22 @@ export const userSeeder = async (dataSource: DataSource) => {
       name: 'Inventory User',
       email: 'inventory@example.com',
       password: hashedPassword,
-      phone: '0123456787',
+      phone: '0123456786',
       role_id: inventoryRole.id
     }
   ];
 
-  // Insert users
-  await userRepository.save(users);
+  // Kiểm tra và thêm từng user
+  for (const userData of users) {
+    const existingUser = await userRepository.findOne({
+      where: [
+        { email: userData.email },
+        { phone: userData.phone }
+      ]
+    });
+
+    if (!existingUser) {
+      await userRepository.save(userData);
+    }
+  }
 };

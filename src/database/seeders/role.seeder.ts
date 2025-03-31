@@ -51,5 +51,14 @@ export const roleSeeder = async (dataSource: DataSource) => {
     }
   ];
 
-  await roleRepository.save(roles);
+  // Kiểm tra và thêm từng role
+  for (const roleData of roles) {
+    const existingRole = await roleRepository.findOne({
+      where: { name: roleData.name }
+    });
+
+    if (!existingRole) {
+      await roleRepository.save(roleData);
+    }
+  }
 };

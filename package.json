@@ -24,7 +24,8 @@
     "migration:revert": "sh -c 'npx typeorm-ts-node-commonjs migration:revert -d ormconfig.ts'",
     "migration:refresh": "sh -c 'npm run migration:revert && npm run migration:run'",
     "db:seed": "ts-node src/database/seeders/seed.ts",
-    "migration:drop": "npx typeorm-ts-node-commonjs schema:drop -d ormconfig.ts"
+    "migration:drop": "npx typeorm-ts-node-commonjs schema:drop -d ormconfig.ts",
+    "db:fresh": "npm run migration:drop && npm run migration:run && npm run db:seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -56,7 +57,7 @@
     "@swc/core": "^1.10.7",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.13.14",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.2",
@@ -71,8 +72,9 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
