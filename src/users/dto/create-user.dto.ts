@@ -1,23 +1,45 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsPhoneNumber, Length, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsEmail, MinLength, MaxLength, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @Length(1, 100)
+  @ApiProperty({
+    description: 'Tên người dùng',
+    example: 'John Doe',
+    maxLength: 50
+  })
+  @IsString()
+  @MaxLength(50)
   name: string;
 
-  @IsNotEmpty()
-  @IsPhoneNumber('VN')
+  @ApiProperty({
+    description: 'Số điện thoại',
+    example: '0123456789',
+    maxLength: 10
+  })
+  @IsString()
+  @MaxLength(10)
   phone: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Email',
+    example: 'john@example.com'
+  })
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Mật khẩu',
+    example: 'password123',
+    minLength: 6
+  })
+  @IsString()
   @MinLength(6)
   password: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  roleId: number;
+  @ApiProperty({
+    description: 'ID của role',
+    example: 1
+  })
+  @IsOptional()
+  roleId?: number;
 }

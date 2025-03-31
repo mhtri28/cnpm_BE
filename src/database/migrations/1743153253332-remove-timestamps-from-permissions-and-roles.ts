@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class RemoveTimestampsFromPermissionsAndRoles1743153253332 implements MigrationInterface {
     name = 'RemoveTimestampsFromPermissionsAndRoles1743153253332'

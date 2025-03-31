@@ -15,15 +15,15 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'table_number' })
+  @Column()
   tableNumber: string;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'waiter_id' })
+  @JoinColumn({ name: 'waiterId' })
   waiter: User;  // Nhân viên phục vụ
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'bartender_id' })
+  @JoinColumn({ name: 'bartenderId' })
   bartender: User;  // Nhân viên pha chế
 
   @Column({
@@ -33,16 +33,16 @@ export class Order {
   })
   status: OrderStatus;
 
-  @Column({ name: 'total_amount', type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   totalAmount: number;
 
   @OneToMany(() => OrderItem, item => item.order, { cascade: true })
   items: OrderItem[];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   // ... các trường khác

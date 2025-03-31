@@ -17,11 +17,16 @@ export class UsersService {
   }
 
   findAll() {
-    return this.usersRepository.find();
+    return this.usersRepository.find({
+      relations: ['role']
+    });
   }
 
   findOne(id: number) {
-    return this.usersRepository.findOne({ where: { id } });
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: ['role']
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
@@ -33,6 +38,9 @@ export class UsersService {
   }
 
   findByEmail(email: string) {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({
+      where: { email },
+      relations: ['role']
+    });
   }
 }

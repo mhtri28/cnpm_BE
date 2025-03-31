@@ -27,32 +27,36 @@ export const userSeeder = async (dataSource: DataSource) => {
       email: 'admin@example.com',
       password: hashedPassword,
       phone: '0123056789',
-      role_id: adminRole.id
+      role: adminRole,
+      roleId: adminRole.id
     },
     {
       name: 'Waiter User',
       email: 'waiter@example.com',
       password: hashedPassword,
       phone: '0123456788',
-      role_id: waiterRole.id
+      role: waiterRole,
+      roleId: waiterRole.id
     },
     {
       name: 'Bartender User',
       email: 'bartender@example.com',
       password: hashedPassword,
       phone: '0123456787',
-      role_id: bartenderRole.id
+      role: bartenderRole,
+      roleId: bartenderRole.id
     },
     {
       name: 'Inventory User',
       email: 'inventory@example.com',
       password: hashedPassword,
       phone: '0123456786',
-      role_id: inventoryRole.id
+      role: inventoryRole,
+      roleId: inventoryRole.id
     }
   ];
 
-  // Kiểm tra và thêm từng user
+  // Kiểm tra và thêm/cập nhật từng user
   for (const userData of users) {
     const existingUser = await userRepository.findOne({
       where: [
@@ -61,7 +65,16 @@ export const userSeeder = async (dataSource: DataSource) => {
       ]
     });
 
-    if (!existingUser) {
+    if (existingUser) {
+      // Cập nhật thông tin user đã tồn tại
+      await userRepository.update(existingUser.id, {
+        name: userData.name,
+        password: userData.password,
+        role: userData.role,
+        roleId: userData.roleId
+      });
+    } else {
+      // Tạo user mới
       await userRepository.save(userData);
     }
   }
