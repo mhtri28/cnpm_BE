@@ -168,9 +168,16 @@ Sau khi chạy seeder, hệ thống sẽ tạo các tài khoản mặc định:
    - Quyền: Tạo và quản lý đơn hàng
 
 3. Bartender:
+
    - Email: bartender@example.com
    - Password: password123
    - Quyền: Pha chế và cập nhật trạng thái đơn hàng
+
+4. Inventory:
+
+   - Email: inventory@example.com
+   - Password: password123
+   - Quyền:
 
 ## Khởi chạy ứng dụng
 
