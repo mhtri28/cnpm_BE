@@ -1,39 +1,128 @@
 import { DataSource } from 'typeorm';
-import { permissionSeeder } from './permission.seeder';
-import { roleSeeder } from './role.seeder';
-import { userSeeder } from './user.seeder';
-import { supplierSeeder } from './supplier.seeder';
-import { orderSeeder } from './order.seeder';
+import * as bcrypt from 'bcrypt';
 import AppDataSource from '../../../ormconfig';
+import { Employee, EmployeeRole } from '../../modules/employees/entities/employee.entity';
+import { Supplier } from '../../modules/suppliers/entities/supplier.entity';
+import { Ingredient } from '../../modules/ingredients/entities/ingredient.entity';
+import { Drink } from '../../modules/drinks/entities/drink.entity';
+import { Recipe } from '../../modules/recipes/entities/recipe.entity';
+import { Order, OrderStatus } from '../../modules/orders/entities/order.entity';
+import { OrderItem } from '../../modules/orders/entities/order-item.entity';
+import { Payment, PaymentMethod, PaymentStatus } from '../../modules/payments/entities/payment.entity';
+import { StockImport } from '../../modules/stock-imports/entities/stock-import.entity';
+import { StockImportItem } from '../../modules/stock-imports/entities/stock-import-item.entity';
 
-const runSeeders = async () => {
+async function seed() {
   try {
-    // Kết nối database
     await AppDataSource.initialize();
-    console.log('Connected to database');
 
-    // Chạy các seeders theo thứ tự
-    console.log('Running permission seeder...');
-    await permissionSeeder(AppDataSource);
+    // Repositories
+    const employeeRepository = AppDataSource.getRepository(Employee);
+    const supplierRepository = AppDataSource.getRepository(Supplier);
+    const ingredientRepository = AppDataSource.getRepository(Ingredient);
+    const drinkRepository = AppDataSource.getRepository(Drink);
+    const recipeRepository = AppDataSource.getRepository(Recipe);
 
-    console.log('Running role seeder...');
-    await roleSeeder(AppDataSource);
+    // 1. Tạo nhân viên
+    const defaultPassword = await bcrypt.hash('password123', 10);
 
-    console.log('Running user seeder...');
-    await userSeeder(AppDataSource);
+    const admin = await employeeRepository.save({
+      name: 'Admin User',
+      email: 'admin@coffee.com',
+      phone: '0123456789',
+      password: defaultPassword,
+      role: EmployeeRole.ADMIN
+    });
 
-    console.log('Running supplier seeder...');
-    await supplierSeeder(AppDataSource);
+    const barista = await employeeRepository.save({
+      name: 'Barista User',
+      email: 'barista@coffee.com',
+      phone: '0123456789',
+      password: defaultPassword,
+      role: EmployeeRole.BARISTA
+    });
 
-    console.log('Running order seeder...');
-    await orderSeeder(AppDataSource);
+    const inventoryManager = await employeeRepository.save({
+      name: 'Inventory Manager',
+      email: 'inventory@coffee.com',
+      phone: '0123456789',
+      password: defaultPassword,
+      role: EmployeeRole.INVENTORY_MANAGER
+    });
+
+    // 2. Tạo nhà cung cấp
+    const supplier1 = await supplierRepository.save({
+      name: 'Coffee Bean Supplier',
+      phone: '0987654321',
+      email: 'beans@supplier.com',
+      address: '123 Coffee Street, City'
+    });
+
+    const supplier2 = await supplierRepository.save({
+      name: 'Milk Supplier',
+      phone: '0987654322',
+      email: 'milk@supplier.com',
+      address: '456 Dairy Road, City'
+    });
+
+    // 3. Tạo nguyên liệu
+    const coffee = await ingredientRepository.save({
+      name: 'Coffee Beans',
+      availableCount: 1000,
+      supplierId: supplier1.id
+    });
+
+    const milk = await ingredientRepository.save({
+      name: 'Fresh Milk',
+      availableCount: 500,
+      supplierId: supplier2.id
+    });
+
+    const sugar = await ingredientRepository.save({
+      name: 'Sugar',
+      availableCount: 800,
+      supplierId: supplier2.id
+    });
+
+    // 4. Tạo đồ uống
+    const americano = await drinkRepository.save({
+      name: 'Americano',
+      price: 35000,
+      soldCount: 0
+    });
+
+    const latte = await drinkRepository.save({
+      name: 'Cafe Latte',
+      price: 45000,
+      soldCount: 0
+    });
+
+    // 5. Tạo công thức
+    await recipeRepository.save({
+      drinkId: americano.id,
+      ingredientId: coffee.id,
+      quantity: 15
+    });
+
+    await recipeRepository.save({
+      drinkId: latte.id,
+      ingredientId: coffee.id,
+      quantity: 10
+    });
+
+    await recipeRepository.save({
+      drinkId: latte.id,
+      ingredientId: milk.id,
+      quantity: 150
+    });
 
     console.log('Seeding completed successfully');
-    process.exit(0);
+
   } catch (error) {
     console.error('Error during seeding:', error);
-    process.exit(1);
+  } finally {
+    await AppDataSource.destroy();
   }
-};
+}
 
-runSeeders();
+seed();
