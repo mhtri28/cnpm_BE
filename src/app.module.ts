@@ -3,14 +3,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-/*import { RolesModule } from './roles/roles.module';
-import { PermissionsModule } from './permissions/permissions.module';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { OrderModule } from './order/order.module';
-import { IngredientsModule } from './ingredients/ingredients.module';*/
 import { config } from 'dotenv';
 import { SupplierModule } from './modules/suppliers/suppliers.module';
+import { Supplier } from './modules/suppliers/entities/supplier.entity';
+import { Employee } from './modules/employees/entities/employee.entity';
+import { Drink } from './modules/drinks/entities/drink.entity';
+import { Ingredient } from './modules/ingredients/entities/ingredient.entity';
+import { Order } from './modules/orders/entities/order.entity';
+import { Payment } from './modules/payments/entities/payment.entity';
+import { Recipe } from './modules/recipes/entities/recipe.entity';
+import { StockImport } from './modules/stock-imports/entities/stock-import.entity';
+import { OrderItem } from './modules/orders/entities/order-item.entity';
+import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
+
 config();
 
 @Module({
@@ -25,18 +30,11 @@ config();
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      autoLoadEntities: true,
-      entities: [],
+      entities: [Employee, Supplier, Drink, Ingredient, Order, OrderItem, Payment, Recipe, StockImport, StockImportItem],
       synchronize: false,
-      migrations: ['src/database/migrations/*.ts'],
+      logging: true,
     }),
-     SupplierModule,
-  /*  RolesModule,
-    PermissionsModule,
-    UsersModule,
-    AuthModule,
-    OrderModule,
-    IngredientsModule,*/
+    SupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService],
