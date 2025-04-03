@@ -24,9 +24,9 @@ export class Ingredient {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // @ManyToOne(() => Supplier, supplier => supplier.ingredients)
-  // @JoinColumn({ name: 'supplierId' })
-  // supplier: Supplier;
+  @ManyToOne(() => Supplier, supplier => supplier.ingredients)
+  @JoinColumn({ name: 'supplierId' })
+  supplier: Supplier;
 
   @OneToMany(() => Recipe, recipe => recipe.ingredient)
   recipes: Recipe[];

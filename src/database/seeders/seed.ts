@@ -1,16 +1,12 @@
-import { DataSource } from 'typeorm';
+import AppDataSource from "../../../ormconfig";
+import { Employee, EmployeeRole } from "../../modules/employees/entities/employee.entity";
+import { Supplier } from "../../modules/suppliers/entities/supplier.entity";
+import { Ingredient } from "../../modules/ingredients/entities/ingredient.entity";
+import { Drink } from "../../modules/drinks/entities/drink.entity";
+import { Recipe } from "../../modules/recipes/entities/recipe.entity";
+import { StockImport } from "../../modules/stock-imports/entities/stock-import.entity";
+import { StockImportItem } from "../../modules/stock-imports/entities/stock-import-item.entity";
 import * as bcrypt from 'bcrypt';
-import AppDataSource from '../../../ormconfig';
-import { Employee, EmployeeRole } from '../../modules/employees/entities/employee.entity';
-import { Supplier } from '../../modules/suppliers/entities/supplier.entity';
-import { Ingredient } from '../../modules/ingredients/entities/ingredient.entity';
-import { Drink } from '../../modules/drinks/entities/drink.entity';
-import { Recipe } from '../../modules/recipes/entities/recipe.entity';
-import { Order, OrderStatus } from '../../modules/orders/entities/order.entity';
-import { OrderItem } from '../../modules/orders/entities/order-item.entity';
-import { Payment, PaymentMethod, PaymentStatus } from '../../modules/payments/entities/payment.entity';
-import { StockImport } from '../../modules/stock-imports/entities/stock-import.entity';
-import { StockImportItem } from '../../modules/stock-imports/entities/stock-import-item.entity';
 
 async function seed() {
   try {
@@ -22,6 +18,8 @@ async function seed() {
     const ingredientRepository = AppDataSource.getRepository(Ingredient);
     const drinkRepository = AppDataSource.getRepository(Drink);
     const recipeRepository = AppDataSource.getRepository(Recipe);
+    const stockImportRepository = AppDataSource.getRepository(StockImport);
+    const stockImportItemRepository = AppDataSource.getRepository(StockImportItem);
 
     // 1. Tạo nhân viên
     const defaultPassword = await bcrypt.hash('password123', 10);
@@ -116,8 +114,41 @@ async function seed() {
       quantity: 150
     });
 
-    console.log('Seeding completed successfully');
+    // 6. Tạo stock_imports
+    const stockImport1 = await stockImportRepository.save({
+      employeeId: inventoryManager.id,
+      supplierId: supplier1.id,
+      totalCost: 1000.00,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
+    const stockImport2 = await stockImportRepository.save({
+      employeeId: inventoryManager.id,
+      supplierId: supplier2.id,
+      totalCost: 500.00,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // 7. Tạo stock_import_items
+    await stockImportItemRepository.save({
+      ingredientId: coffee.id,
+      stockImportId: stockImport1.id,
+      unitPrice: 10.00,
+      quantity: 100,
+      subTotal: 1000.00,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: milk.id,
+      stockImportId: stockImport2.id,
+      unitPrice: 5.00,
+      quantity: 100,
+      subTotal: 500.00,
+    });
+
+    console.log('Seeding completed successfully');
   } catch (error) {
     console.error('Error during seeding:', error);
   } finally {
@@ -125,4 +156,8 @@ async function seed() {
   }
 }
 
-seed();
+// Call the seed function
+seed().catch(error => {
+  console.error('Error running seed:', error);
+  process.exit(1);
+});

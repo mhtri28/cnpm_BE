@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { StockImport } from '../../stock-imports/entities/stock-import.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
 
 export enum EmployeeRole {
   ADMIN = 'admin',
@@ -37,4 +38,7 @@ export class Employee {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => StockImport, stockImport => stockImport.employee)
+  stockImports: StockImport[];
 }

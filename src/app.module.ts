@@ -15,6 +15,10 @@ import { Recipe } from './modules/recipes/entities/recipe.entity';
 import { StockImport } from './modules/stock-imports/entities/stock-import.entity';
 import { OrderItem } from './modules/orders/entities/order-item.entity';
 import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
+import { StockImportModule } from './modules/stock-imports/stock-imports/stock-import.module';
+import { StockImportItemModule } from './modules/stock-imports/stock-import-item/stock-import-item.module';
+
+
 
 config();
 
@@ -35,6 +39,8 @@ config();
       logging: true,
     }),
     SupplierModule,
+    StockImportModule,
+    StockImportItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

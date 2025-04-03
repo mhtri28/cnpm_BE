@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Ingredient } from "../../ingredients/entities/ingredient.entity";
+import { StockImport } from "../../stock-imports/entities/stock-import.entity";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from "typeorm";
 
 @Entity({ name: 'suppliers' })
 export class Supplier {
@@ -16,4 +18,10 @@ export class Supplier {
 
     @Column({ length: 50 })
     address: string;
+
+    @OneToMany(() => StockImport, stockImport => stockImport.supplier)
+    stockImports: StockImport[];
+
+    @OneToMany('Ingredient', 'supplier')
+    ingredients: Ingredient[];
 }

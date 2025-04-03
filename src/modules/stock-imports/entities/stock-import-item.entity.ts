@@ -4,7 +4,7 @@ import { StockImport } from './stock-import.entity';
 
 @Entity('stock_import_items')
 export class StockImportItem {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn({ type: 'integer', unsigned: true })
   id: number;
 
   @Column()
@@ -30,3 +30,4 @@ export class StockImportItem {
   @JoinColumn({ name: 'stockImportId' })
   stockImport: StockImport;
 }
+

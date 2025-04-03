@@ -10,8 +10,14 @@ const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: ['src/**/*.entity{.ts,.js}'],
-  migrations: ['src/database/migrations/*.ts'],
+  entities: [
+    'dist/**/*.entity{.js}',  // compiled JavaScript files for production
+    'src/**/*.entity{.ts,.js}',  // TypeScript and JavaScript files for development
+  ],
+  migrations: [
+    'dist/database/migrations/*.js', // For production (compiled migrations)
+    'src/database/migrations/*.ts', // For development (TypeScript migrations)
+  ],
   synchronize: false,
 });
 

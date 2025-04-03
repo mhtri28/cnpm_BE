@@ -3,6 +3,9 @@ import { IsEmail, IsNumber, IsPhoneNumber, MinLength } from "class-validator";
 import { Length } from "class-validator";
 
 import { IsNotEmpty } from "class-validator";
+import { ManyToOne } from "typeorm";
+import { JoinColumn } from "typeorm";
+import { Supplier } from "../entities/supplier.entity";
 
 export class CreateSupplierDto {
     @IsNotEmpty()

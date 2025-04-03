@@ -1,11 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Employee } from '../../employees/entities/employee.entity';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
 import { StockImportItem } from './stock-import-item.entity';
 
 @Entity('stock_imports')
 export class StockImport {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn({ type: 'integer', unsigned: true })
   id: number;
 
   @Column()
@@ -30,9 +30,9 @@ export class StockImport {
   @JoinColumn({ name: 'employeeId' })
   employee: Employee;
 
-  // @ManyToOne(() => Supplier, supplier => supplier.stockImports)
-  // @JoinColumn({ name: 'supplierId' })
-  // supplier: Supplier;
+  @ManyToOne(() => Supplier, supplier => supplier.stockImports)
+  @JoinColumn({ name: 'supplierId' })
+  supplier: Supplier;
 
   @OneToMany(() => StockImportItem, stockImportItem => stockImportItem.stockImport)
   stockImportItems: StockImportItem[];
