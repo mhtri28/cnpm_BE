@@ -1,36 +1,19 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
-import { Ingredient } from '../../ingredients/entities/ingredient.entity';
-import { StockImport } from '../../stock-imports/entities/stock-import.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-@Entity('suppliers')
+@Entity({ name: 'suppliers' })
 export class Supplier {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+    @PrimaryGeneratedColumn({ type: 'integer', unsigned: true })
+    id: number;
 
-  @Column()
-  name: string;
+    @Column({ length: 50 })
+    name: string;
 
-  @Column()
-  phone: string;
+    @Column({ length: 10, unique: true })
+    phone: string;
 
-  @Column()
-  email: string;
+    @Column({ unique: true })
+    email: string;
 
-  @Column()
-  address: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
-
-  @OneToMany(() => Ingredient, ingredient => ingredient.supplier)
-  ingredients: Ingredient[];
-
-  @OneToMany(() => StockImport, stockImport => stockImport.supplier)
-  stockImports: StockImport[];
+    @Column({ length: 50 })
+    address: string;
 }

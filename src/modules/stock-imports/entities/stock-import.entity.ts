@@ -30,9 +30,9 @@ export class StockImport {
   @JoinColumn({ name: 'employeeId' })
   employee: Employee;
 
-  @ManyToOne(() => Supplier, supplier => supplier.stockImports)
-  @JoinColumn({ name: 'supplierId' })
-  supplier: Supplier;
+  // @ManyToOne(() => Supplier, supplier => supplier.stockImports)
+  // @JoinColumn({ name: 'supplierId' })
+  // supplier: Supplier;
 
   @OneToMany(() => StockImportItem, stockImportItem => stockImportItem.stockImport)
   stockImportItems: StockImportItem[];
