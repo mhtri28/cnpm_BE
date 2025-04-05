@@ -23,7 +23,7 @@
     "migration:run": "cross-env npx typeorm-ts-node-commonjs migration:run -d ormconfig.ts",
     "migration:revert": "sh -c 'npx typeorm-ts-node-commonjs migration:revert -d ormconfig.ts'",
     "migration:refresh": "sh -c 'npm run migration:revert && npm run migration:run'",
-    "db:seed": "ts-node src/database/seeders/seed.ts",
+    "db:seed": "ts-node -r tsconfig-paths/register src/database/seeders/seed.ts",
     "migration:drop": "npx typeorm-ts-node-commonjs schema:drop -d ormconfig.ts",
     "db:fresh": "npm run migration:drop && npm run migration:run && npm run db:seed"
   },

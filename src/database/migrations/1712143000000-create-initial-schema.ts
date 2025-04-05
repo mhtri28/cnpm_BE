@@ -53,6 +53,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         availableCount BIGINT NOT NULL DEFAULT 0,
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+        deletedAt TIMESTAMP NULL,
         FOREIGN KEY (supplierId) REFERENCES suppliers(id)
       )
     `);

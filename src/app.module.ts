@@ -15,6 +15,10 @@ import { Recipe } from './modules/recipes/entities/recipe.entity';
 import { StockImport } from './modules/stock-imports/entities/stock-import.entity';
 import { OrderItem } from './modules/orders/entities/order-item.entity';
 import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
+import { EmployeesModule } from './modules/employees/employees.module';
+import { StockImportsModule } from './modules/stock-imports/stock-imports.module';
+import { GuardModule } from './guard/guard.module';
+import { RecipesModule } from './modules/recipes/recipes.module';
 
 config();
 
@@ -30,11 +34,26 @@ config();
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [Employee, Supplier, Drink, Ingredient, Order, OrderItem, Payment, Recipe, StockImport, StockImportItem],
+      entities: [
+        Employee,
+        Supplier,
+        Drink,
+        Ingredient,
+        Order,
+        OrderItem,
+        Payment,
+        Recipe,
+        StockImport,
+        StockImportItem,
+      ],
       synchronize: false,
       logging: true,
     }),
     SupplierModule,
+    EmployeesModule,
+    StockImportsModule,
+    RecipesModule,
+    GuardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
