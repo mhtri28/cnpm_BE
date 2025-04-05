@@ -15,6 +15,7 @@ import { Recipe } from './modules/recipes/entities/recipe.entity';
 import { StockImport } from './modules/stock-imports/entities/stock-import.entity';
 import { OrderItem } from './modules/orders/entities/order-item.entity';
 import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
+import { EmployeesModule } from './modules/employees/employees.module';
 
 config();
 
@@ -30,11 +31,23 @@ config();
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [Employee, Supplier, Drink, Ingredient, Order, OrderItem, Payment, Recipe, StockImport, StockImportItem],
+      entities: [
+        Employee,
+        Supplier,
+        Drink,
+        Ingredient,
+        Order,
+        OrderItem,
+        Payment,
+        Recipe,
+        StockImport,
+        StockImportItem,
+      ],
       synchronize: false,
       logging: true,
     }),
     SupplierModule,
+    EmployeesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,9 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 
 export enum EmployeeRole {
   ADMIN = 'admin',
   BARISTA = 'barista',
-  INVENTORY_MANAGER = 'inventory_manager'
+  INVENTORY_MANAGER = 'inventory_manager',
 }
 
 @Entity('employees')
@@ -21,6 +29,7 @@ export class Employee {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @Column({
