@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -6,9 +7,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { EmployeesService } from 'src/modules/employees/employees.service';
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private employeeService: EmployeesService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -21,8 +26,16 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
+      // 3) find user in db based on jwtVerify
+      const user = await this.employeeService.findById(payload.sub);
+
+      if (!user) {
+        throw new BadRequestException(
+          'User not belong to token, please try again!',
+        );
+      }
       // Lưu thông tin user vào request
-      request.currentUser = payload;
+      request.currentUser = user;
     } catch {
       throw new UnauthorizedException();
     }
