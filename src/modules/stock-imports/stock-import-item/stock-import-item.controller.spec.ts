@@ -9,7 +9,9 @@ describe('StockImportItemController', () => {
       controllers: [StockImportItemController],
     }).compile();
 
-    controller = module.get<StockImportItemController>(StockImportItemController);
+    controller = module.get<StockImportItemController>(
+      StockImportItemController,
+    );
   });
 
   it('should be defined', () => {

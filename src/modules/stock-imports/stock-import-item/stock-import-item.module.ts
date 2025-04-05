@@ -5,9 +5,8 @@ import { StockImport } from '../entities/stock-import.entity';
 import { StockImportItemController } from './stock-import-item.controller';
 import { StockImportItemService } from './stock-import-item.service';
 @Module({
-  imports: [TypeOrmModule.forFeature([StockImport, StockImportItem])], 
+  imports: [TypeOrmModule.forFeature([StockImport, StockImportItem])],
   providers: [StockImportItemService],
-  controllers: [StockImportItemController]
+  controllers: [StockImportItemController],
 })
 export class StockImportItemModule {}
-

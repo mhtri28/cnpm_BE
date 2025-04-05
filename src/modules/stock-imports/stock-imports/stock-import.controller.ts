@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Put, Delete, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Delete,
+  Body,
+} from '@nestjs/common';
 import { CreateStockImportDto } from '../dto/create-stock-import.dto';
 import { StockImportService } from './stock-import.service';
 

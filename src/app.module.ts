@@ -18,8 +18,6 @@ import { StockImportItem } from './modules/stock-imports/entities/stock-import-i
 import { StockImportModule } from './modules/stock-imports/stock-imports/stock-import.module';
 import { StockImportItemModule } from './modules/stock-imports/stock-import-item/stock-import-item.module';
 
-
-
 config();
 
 @Module({
@@ -34,7 +32,18 @@ config();
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [Employee, Supplier, Drink, Ingredient, Order, OrderItem, Payment, Recipe, StockImport, StockImportItem],
+      entities: [
+        Employee,
+        Supplier,
+        Drink,
+        Ingredient,
+        Order,
+        OrderItem,
+        Payment,
+        Recipe,
+        StockImport,
+        StockImportItem,
+      ],
       synchronize: false,
       logging: true,
     }),

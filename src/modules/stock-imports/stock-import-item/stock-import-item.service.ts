@@ -13,7 +13,9 @@ export class StockImportItemService {
 
   // Tạo Stock Import Item
   async create(createStockImportItemDto: CreateStockImportItemDto) {
-    const stockImportItem = this.stockImportItemRepo.create(createStockImportItemDto);
+    const stockImportItem = this.stockImportItemRepo.create(
+      createStockImportItemDto,
+    );
     return await this.stockImportItemRepo.save(stockImportItem);
   }
 
@@ -30,21 +32,22 @@ export class StockImportItemService {
       where: { id },
       relations: ['ingredient', 'stockImport'], // Quan hệ đúng trong StockImportItem
     });
-    if (!stockImportItem) throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
+    if (!stockImportItem)
+      throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
     return stockImportItem;
   }
 
-//   // Cập nhật Stock Import Item
-//   async update(id: number, updateStockImportItemDto: UpdateStockImportItemDto) {
-//     const stockImportItem = await this.stockImportItemRepo.preload({ id, ...updateStockImportItemDto });
-//     if (!stockImportItem) throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
-//     return await this.stockImportItemRepo.save(stockImportItem);
-//   }
+  //   // Cập nhật Stock Import Item
+  //   async update(id: number, updateStockImportItemDto: UpdateStockImportItemDto) {
+  //     const stockImportItem = await this.stockImportItemRepo.preload({ id, ...updateStockImportItemDto });
+  //     if (!stockImportItem) throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
+  //     return await this.stockImportItemRepo.save(stockImportItem);
+  //   }
 
-//   // Xóa Stock Import Item
-//   async remove(id: number) {
-//     const result = await this.stockImportItemRepo.delete(id);
-//     if (result.affected === 0) throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
-//     return { message: 'Stock Import Item deleted successfully' };
-//   }
+  //   // Xóa Stock Import Item
+  //   async remove(id: number) {
+  //     const result = await this.stockImportItemRepo.delete(id);
+  //     if (result.affected === 0) throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
+  //     return { message: 'Stock Import Item deleted successfully' };
+  //   }
 }

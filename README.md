@@ -1,6 +1,7 @@
-# Food Store Management System
+# Drink Store Management System
 
-Hệ thống quản lý cửa hàng bán đồ ăn với các chức năng quản lý người dùng, sản phẩm, đơn hàng và kho.
+Hệ thống quản lý cửa hàng bán đồ uống với các chức năng quản lý người dùng, sản phẩm, đơn hàng và 
+kho.
 
 ## Yêu cầu hệ thống
 
@@ -71,32 +72,6 @@ Hệ thống sử dụng JWT (JSON Web Token) để xác thực người dùng. 
 5. Khi đăng xuất:
    - Gọi API `/auth/logout`
    - Access token sẽ bị đưa vào blacklist
-
-## Quy ước code
-
-### Quy ước đặt tên
-
-- **TypeScript/JavaScript**: Sử dụng camelCase cho tất cả tên biến, hàm, thuộc tính và cột trong database
-
-  ```typescript
-  // Tên biến và hàm
-  const userName = 'John';
-  function getUserById() {}
-
-  // Entity
-  @Entity('users')
-  export class User {
-    @Column()
-    firstName: string;
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @ManyToOne(() => Role)
-    @JoinColumn({ name: 'roleId' })
-    role: Role;
-  }
-  ```
 
 ## Quản lý Database
 

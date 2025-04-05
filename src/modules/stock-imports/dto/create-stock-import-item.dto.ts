@@ -11,16 +11,16 @@ export class CreateStockImportItemDto {
 
   @IsNumber()
   @IsNotEmpty()
-  @Min(0)  // Đảm bảo giá không âm
+  @Min(0) // Đảm bảo giá không âm
   unitPrice: number;
 
   @IsNumber()
   @IsNotEmpty()
-  @Min(1)  // Đảm bảo số lượng ít nhất là 1
+  @Min(1) // Đảm bảo số lượng ít nhất là 1
   quantity: number;
 
   @IsNumber()
   @IsNotEmpty()
-  @Min(0)  // Đảm bảo tổng giá trị không âm
+  @Min(0) // Đảm bảo tổng giá trị không âm
   subTotal: number;
 }
