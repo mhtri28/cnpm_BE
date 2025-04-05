@@ -1,6 +1,6 @@
 # Drink Store Management System
 
-Hệ thống quản lý cửa hàng bán đồ uống với các chức năng quản lý người dùng, sản phẩm, đơn hàng và 
+Hệ thống quản lý cửa hàng bán đồ uống với các chức năng quản lý người dùng, sản phẩm, đơn hàng và
 kho.
 
 ## Yêu cầu hệ thống
@@ -14,8 +14,8 @@ kho.
 1. Clone repository:
 
 ```bash
-git clone <repository-url>
-cd food-store-management
+git clone <https://github.com/mhtri28/cnpm_BE>
+cd cnpm_BE
 ```
 
 2. Cài đặt dependencies:
@@ -106,22 +106,21 @@ npm run db:fresh
 
 ## Business Logic
 
-### Quản lý người dùng
+### Quản lý nhân viên
 
-- Phân quyền người dùng (Admin, Waiter, Bartender)
-- Mỗi người dùng có thể có nhiều vai trò
-- Mỗi vai trò có nhiều quyền hạn
+- Phân quyền nhân viên (Admin, Barista, Inventory Manager)
 
 ### Quản lý đơn hàng
 
-- Đơn hàng được tạo bởi Waiter
-- Bartender phụ trách pha chế
+- Đơn hàng được tạo bởi Khách hàng
+- Barista phụ trách pha chế
 - Trạng thái đơn hàng: PENDING -> PREPARING -> READY -> DELIVERED
 - Mỗi đơn hàng có thể có nhiều món
 - Tính toán tổng tiền tự động
 
 ### Quản lý kho
 
+- Do Inventory Manager quản lý
 - Theo dõi số lượng nguyên liệu
 - Cảnh báo khi nguyên liệu sắp hết
 - Lịch sử nhập/xuất kho
@@ -136,23 +135,17 @@ Sau khi chạy seeder, hệ thống sẽ tạo các tài khoản mặc định:
    - Password: password123
    - Quyền: Quản lý toàn bộ hệ thống
 
-2. Waiter:
+2. Bartender:
 
-   - Email: waiter@example.com
+   - Email: barista@example.com
    - Password: password123
-   - Quyền: Tạo và quản lý đơn hàng
+   - Quyền: Chấp nhận đơn hàng, pha chế và cập nhật trạng thái đơn hàng
 
-3. Bartender:
-
-   - Email: bartender@example.com
-   - Password: password123
-   - Quyền: Pha chế và cập nhật trạng thái đơn hàng
-
-4. Inventory:
+3. Inventory Manager:
 
    - Email: inventory@example.com
    - Password: password123
-   - Quyền:
+   - Quyền: Tạo đơn nhập hàng mới, quản lý nhà cung cấp.
 
 ## Khởi chạy ứng dụng
 
