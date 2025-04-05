@@ -19,7 +19,7 @@ export class AuthService {
 
   async register(
     createUserDto: CreateUserDto,
-  ): Promise<{ message: string; user: Employee }> {
+  ): Promise<{ message: string; access_token: string }> {
     // 1. Check if user already exists
     const existingUser = await this.employeeService.findByEmail(
       createUserDto.email,
@@ -39,14 +39,20 @@ export class AuthService {
 
     // 4. Save user to database
     const createdUser = await this.employeeService.create(newUserData);
+    const payload = {
+      sub: createdUser.id,
+      name: createdUser.name,
+      email: createdUser.email,
+      phone: createdUser.phone,
+      role: createdUser.role, // Thêm thông tin role
+    };
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+    });
 
-    // 5. Remove password from response
-    const { password, ...result } = createdUser;
-
-    // 6. Return success message and user data
     return {
-      message: 'Employee registered successfully',
-      user: result as Employee,
+      message: 'Đăng ký thành công',
+      access_token,
     };
   }
   async signIn(
@@ -74,6 +80,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      role: user.role,
     };
 
     // 4. Ký token
