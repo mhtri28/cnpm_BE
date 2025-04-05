@@ -1,4 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Employee } from '../../employees/entities/employee.entity';
 import { OrderItem } from './order-item.entity';
 import { Payment } from '../../payments/entities/payment.entity';
@@ -7,37 +17,37 @@ export enum OrderStatus {
   PENDING = 'pending',
   PREPARING = 'preparing',
   COMPLETED = 'completed',
-  CANCELED = 'canceled'
+  CANCELED = 'canceled',
 }
 
 @Entity('orders')
 export class Order {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column()
+  @Column({ type: 'bigint', unsigned: true })
   employeeId: number;
 
   @Column({
     type: 'enum',
     enum: OrderStatus,
-    default: OrderStatus.PENDING
+    default: OrderStatus.PENDING,
   })
   status: OrderStatus;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ nullable: true })
   updatedAt: Date;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employeeId' })
   employee: Employee;
 
-  @OneToMany(() => OrderItem, orderItem => orderItem.order)
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
   orderItems: OrderItem[];
 
-  @OneToOne(() => Payment, payment => payment.order)
+  @OneToOne(() => Payment, (payment) => payment.order)
   payment: Payment;
 }

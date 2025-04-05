@@ -16,6 +16,8 @@ import { StockImport } from './modules/stock-imports/entities/stock-import.entit
 import { OrderItem } from './modules/orders/entities/order-item.entity';
 import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { StockImportModule } from './modules/stock-imports/stock-imports/stock-import.module';
+import { StockImportItemModule } from './modules/stock-imports/stock-import-item/stock-import-item.module';
 
 config();
 
@@ -48,6 +50,8 @@ config();
     }),
     SupplierModule,
     EmployeesModule,
+    StockImportModule,
+    StockImportItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],
