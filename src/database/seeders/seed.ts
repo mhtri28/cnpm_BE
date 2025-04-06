@@ -7,8 +7,8 @@ import { Supplier } from '../../modules/suppliers/entities/supplier.entity';
 import { Ingredient } from '../../modules/ingredients/entities/ingredient.entity';
 import { Drink } from '../../modules/drinks/entities/drink.entity';
 import { Recipe } from '../../modules/recipes/entities/recipe.entity';
-import { StockImport } from '../../modules/stock-imports/entities/stock-import.entity';
-import { StockImportItem } from '../../modules/stock-imports/entities/stock-import-item.entity';
+import { StockImport } from '../../modules/stock-imports-main/entities/stock-import.entity';
+import { StockImportItem } from '../../modules/stock-imports-main/entities/stock-import-item.entity';
 import * as bcrypt from 'bcrypt';
 
 async function seed() {

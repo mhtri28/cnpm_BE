@@ -16,6 +16,7 @@ import { RoleGuard } from '../../../guard/role.guard';
 import { EmployeeRole } from '../../employees/entities/employee.entity';
 import { AuthGuard } from '../../../guard/auth.guard';
 import { Roles } from '../../../decorators/role.decorator';
+import { UpdateStockImportItemDto } from '../dto/update-stock-import-item.dto';
 
 @Controller('stock-import-item')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -43,13 +44,13 @@ export class StockImportItemController {
     return this.stockImportItemService.findOne(id);
   }
 
-  //   @Put(':id')
-  //   update(@Param('id') id: number, @Body() updateStockImportItemDto: UpdateStockImportItemDto) {
-  //     return this.stockImportItemService.update(id, updateStockImportItemDto);
-  //   }
+    @Put(':id')
+    update(@Param('id') id: number, @Body() updateStockImportItemDto: UpdateStockImportItemDto) {
+      return this.stockImportItemService.update(id, updateStockImportItemDto);
+    }
 
-  //   @Delete(':id')
-  //   remove(@Param('id') id: number) {
-  //     return this.stockImportItemService.remove(id);
-  //   }
+    @Delete(':id')
+    remove(@Param('id') id: number) {
+      return this.stockImportItemService.remove(id);
+    }
 }

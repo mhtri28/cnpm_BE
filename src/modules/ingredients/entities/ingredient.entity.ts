@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
 import { Recipe } from '../../recipes/entities/recipe.entity';
-import { StockImportItem } from '../../stock-imports/entities/stock-import-item.entity';
+import { StockImportItem } from '../../stock-imports-main/entities/stock-import-item.entity';
 
 @Entity('ingredients')
 export class Ingredient {

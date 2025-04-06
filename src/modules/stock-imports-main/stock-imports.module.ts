@@ -4,5 +4,6 @@ import { StockImportItemModule } from './stock-import-item/stock-import-item.mod
 
 @Module({
   imports: [StockImportModule, StockImportItemModule],
+  exports: [StockImportModule, StockImportItemModule],
 })
 export class StockImportsModule {} 
