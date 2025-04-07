@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { Order } from '../../orders/entities/order.entity';
-import { StockImport } from '../../stock-imports/entities/stock-import.entity';
+import { StockImport } from '../../stock-imports-main/entities/stock-import.entity';
 import {
   Entity,
   Column,

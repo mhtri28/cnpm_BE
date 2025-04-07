@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Employee } from './entities/employee.entity';
 import { EmployeesController } from './employees.controller';
 import { EmployeesService } from './employees.service';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from 'src/guard/auth.service';
+import { GuardModule } from '../../guard/guard.module';
 
 @Module({
   imports: [
@@ -13,8 +13,10 @@ import { AuthService } from 'src/guard/auth.service';
       global: true,
       signOptions: { expiresIn: '1d' },
     }),
+    forwardRef(() => GuardModule),
   ],
-  providers: [EmployeesService, AuthService],
+  providers: [EmployeesService],
   controllers: [EmployeesController],
+  exports: [EmployeesService],
 })
 export class EmployeesModule {}

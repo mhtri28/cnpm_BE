@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,9 +13,11 @@ import { Employee } from 'src/modules/employees/entities/employee.entity';
 import { CreateUserDto } from 'src/modules/employees/dtos/createUser.dto';
 import { RefreshTokenDto } from './dtos/refreshToken.dto';
 
+
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => EmployeesService))
     private employeeService: EmployeesService,
     private jwtService: JwtService,
   ) {}
@@ -62,6 +66,7 @@ export class AuthService {
       refresh_token,
     };
   }
+
   async signIn(
     requestBody: LoginUserDto,
   ): Promise<{ message: string; access_token: string; refresh_token: string }> {
@@ -138,5 +143,9 @@ export class AuthService {
         'Refresh token không hợp lệ hoặc đã hết hạn',
       );
     }
+
+  async validateUser(userId: string) {
+    return this.employeeService.findById(Number(userId));
+
   }
 }

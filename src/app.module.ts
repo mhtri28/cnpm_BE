@@ -12,12 +12,14 @@ import { Ingredient } from './modules/ingredients/entities/ingredient.entity';
 import { Order } from './modules/orders/entities/order.entity';
 import { Payment } from './modules/payments/entities/payment.entity';
 import { Recipe } from './modules/recipes/entities/recipe.entity';
-import { StockImport } from './modules/stock-imports/entities/stock-import.entity';
+import { StockImport } from './modules/stock-imports-main/entities/stock-import.entity';
 import { OrderItem } from './modules/orders/entities/order-item.entity';
-import { StockImportItem } from './modules/stock-imports/entities/stock-import-item.entity';
+import { StockImportItem } from './modules/stock-imports-main/entities/stock-import-item.entity';
 import { EmployeesModule } from './modules/employees/employees.module';
-import { StockImportModule } from './modules/stock-imports/stock-imports/stock-import.module';
-import { StockImportItemModule } from './modules/stock-imports/stock-import-item/stock-import-item.module';
+import { StockImportsModule } from './modules/stock-imports-main/stock-imports.module';
+import { GuardModule } from './guard/guard.module';
+import { RecipesModule } from './modules/recipes/recipes.module';
+import { IngredientsModule } from './modules/ingredients/ingredients.module';
 
 config();
 
@@ -50,8 +52,10 @@ config();
     }),
     SupplierModule,
     EmployeesModule,
-    StockImportModule,
-    StockImportItemModule,
+    StockImportsModule,
+    RecipesModule,
+    GuardModule,
+    IngredientsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

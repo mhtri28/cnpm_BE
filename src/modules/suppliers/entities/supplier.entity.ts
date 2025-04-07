@@ -1,5 +1,5 @@
 import { Ingredient } from '../../ingredients/entities/ingredient.entity';
-import { StockImport } from '../../stock-imports/entities/stock-import.entity';
+import { StockImport } from '../../stock-imports-main/entities/stock-import.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
