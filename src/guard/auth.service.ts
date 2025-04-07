@@ -7,10 +7,12 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { EmployeesService } from '../modules/employees/employees.service';
-import { LoginUserDto } from '../modules/employees/dtos/LoginUserDto';
-import { Employee } from '../modules/employees/entities/employee.entity';
-import { CreateUserDto } from '../modules/employees/dtos/createUser.dto';
+import { EmployeesService } from 'src/modules/employees/employees.service';
+import { LoginUserDto } from 'src/modules/employees/dtos/LoginUserDto';
+import { Employee } from 'src/modules/employees/entities/employee.entity';
+import { CreateUserDto } from 'src/modules/employees/dtos/createUser.dto';
+import { RefreshTokenDto } from './dtos/refreshToken.dto';
+
 
 @Injectable()
 export class AuthService {
@@ -22,7 +24,7 @@ export class AuthService {
 
   async register(
     createUserDto: CreateUserDto,
-  ): Promise<{ message: string; access_token: string }> {
+  ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     // 1. Check if user already exists
     const existingUser = await this.employeeService.findByEmail(
       createUserDto.email,
@@ -53,15 +55,21 @@ export class AuthService {
       secret: process.env.JWT_SECRET,
     });
 
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '7d',
+    });
+
     return {
       message: 'Đăng ký thành công',
       access_token,
+      refresh_token,
     };
   }
 
   async signIn(
     requestBody: LoginUserDto,
-  ): Promise<{ message: string; access_token: string }> {
+  ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     const user = await this.employeeService.findByEmail(requestBody.email);
 
     // 1. Kiểm tra user có tồn tại không
@@ -92,14 +100,52 @@ export class AuthService {
       secret: process.env.JWT_SECRET,
     });
 
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '7d',
+    });
+
     // 5. Trả kết quả
     return {
       message: 'Đăng nhập thành công',
       access_token,
+      refresh_token,
     };
   }
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    const { refresh_token } = refreshTokenDto;
+
+    try {
+      const payload = await this.jwtService.verifyAsync(refresh_token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const newAccessToken = await this.jwtService.signAsync(
+        {
+          sub: payload.sub,
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          role: payload.role,
+        },
+        {
+          secret: process.env.JWT_SECRET,
+          expiresIn: '15m',
+        },
+      );
+
+      return {
+        message: 'Refresh token thành công',
+        access_token: newAccessToken,
+      };
+    } catch (err) {
+      throw new UnauthorizedException(
+        'Refresh token không hợp lệ hoặc đã hết hạn',
+      );
+    }
 
   async validateUser(userId: string) {
     return this.employeeService.findById(Number(userId));
+
   }
 }

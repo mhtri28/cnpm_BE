@@ -10,6 +10,7 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
+import { IsPhoneNumber } from 'class-validator';
 
 export enum EmployeeRole {
   ADMIN = 'admin',
@@ -26,6 +27,7 @@ export class Employee {
   name: string;
 
   @Column({ length: 10, unique: true })
+  @IsPhoneNumber('VN')
   phone: string;
 
   @Column({ unique: true })
