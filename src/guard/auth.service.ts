@@ -13,7 +13,6 @@ import { Employee } from 'src/modules/employees/entities/employee.entity';
 import { CreateUserDto } from 'src/modules/employees/dtos/createUser.dto';
 import { RefreshTokenDto } from './dtos/refreshToken.dto';
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -143,9 +142,8 @@ export class AuthService {
         'Refresh token không hợp lệ hoặc đã hết hạn',
       );
     }
-
+  }
   async validateUser(userId: string) {
     return this.employeeService.findById(Number(userId));
-
   }
 }

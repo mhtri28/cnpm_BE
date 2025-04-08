@@ -32,10 +32,10 @@ export class AuthGuard implements CanActivate {
       });
 
       this.logger.debug(`Token payload: ${JSON.stringify(payload)}`);
-      
+
       // Lấy thông tin user từ AuthService
       const user = await this.authService.validateUser(payload.sub);
-      
+
       if (!user) {
         throw new BadRequestException(
           'User not belong to token, please try again!',
@@ -53,7 +53,9 @@ export class AuthGuard implements CanActivate {
         role: user.role,
       };
 
-      this.logger.debug(`Current user set: ${JSON.stringify(request.currentUser)}`);
+      this.logger.debug(
+        `Current user set: ${JSON.stringify(request.currentUser)}`,
+      );
     } catch (error) {
       this.logger.error(`Authentication failed: ${error.message}`);
       throw new UnauthorizedException('Invalid token');
