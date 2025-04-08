@@ -9,6 +9,8 @@ import {
   UseGuards,
   ClassSerializerInterceptor,
   UseInterceptors,
+  ParseIntPipe,
+  Patch
 } from '@nestjs/common';
 import { CreateStockImportDto } from '../dto/create-stock-import.dto';
 import { StockImportService } from './stock-import.service';
@@ -51,4 +53,9 @@ export class StockImportController {
   remove(@Param('id') id: number) {
      return this.stockImportService.remove(id);
    }
+
+   @Patch(':id')
+   restore(@Param('id', ParseIntPipe) id: number) {
+    return this.stockImportService.restore(id);
+  }
 }

@@ -67,4 +67,12 @@ export class SupplierService {
   deleteById(id: number) {
     return this.supplierRepo.delete(id);
   }
+
+  async restore(id: number) {
+      const result = await this.supplierRepo.restore(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Supplier with ID ${id} not found`);
+      }
+      return this.findById(id);
+    }
 }

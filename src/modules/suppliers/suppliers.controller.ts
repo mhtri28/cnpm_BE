@@ -57,4 +57,9 @@ export class SupplierController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.deleteById(id);
   }
+
+  @Patch(':id')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.supplierService.restore(id);
+  }
 }

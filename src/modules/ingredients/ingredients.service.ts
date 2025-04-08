@@ -82,7 +82,18 @@ export class IngredientsService {
   }
 
   async deleteById(id: number) {
-    const ingredient = await this.findById(id);
-    return this.ingredientRepo.remove(ingredient);
+    const result = await this.ingredientRepo.softDelete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    }
+    return { message: 'Ingredient deleted successfully' };
   }
-} 
+  async restore(id: number) {
+    const result = await this.ingredientRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+    return this.findById(id);
+  }
+  
+}

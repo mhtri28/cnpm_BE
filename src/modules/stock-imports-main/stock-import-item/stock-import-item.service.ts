@@ -100,10 +100,18 @@ export class StockImportItemService {
 
   // Xóa Stock Import Item
   async remove(id: number) {
-    const result = await this.stockImportItemRepo.delete(id);
+    const result = await this.stockImportItemRepo.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
     }
     return { message: 'Stock Import Item deleted successfully' };
   }
+
+  async restore(id: number) {
+      const result = await this.stockImportItemRepo.restore(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
+      }
+      return this.findOne(id);
+    }
 }

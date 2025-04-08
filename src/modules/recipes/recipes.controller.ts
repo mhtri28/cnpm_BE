@@ -58,4 +58,9 @@ export class RecipesController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.recipesService.deleteById(id);
   }
-} 
+
+  @Patch(':id')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.recipesService.restore(id);
+  }
+}

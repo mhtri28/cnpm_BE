@@ -106,4 +106,5 @@ export class EmployeesService {
   findByEmail(email: string) {
     return this.employeeRepo.findOneBy({ email });
   }
+  
 }

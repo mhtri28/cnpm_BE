@@ -108,7 +108,18 @@ export class RecipesService {
   }
 
   async deleteById(id: number) {
-    const recipe = await this.findById(id);
-    return this.recipeRepo.remove(recipe);
+    const result = await this.recipeRepo.softDelete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Recipe with ID ${id} not found`);
+    }
+    return { message: 'Recipe deleted successfully' };
   }
-} 
+
+  async restore(id: number) {
+      const result = await this.recipeRepo.restore(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Recipe with ID ${id} not found`);
+      }
+      return this.findById(id);
+    }
+}

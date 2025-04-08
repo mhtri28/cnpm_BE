@@ -58,4 +58,9 @@ export class IngredientsController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.ingredientsService.deleteById(id);
   }
-} 
+
+  @Patch(':id')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.ingredientsService.restore(id);
+  }
+}
