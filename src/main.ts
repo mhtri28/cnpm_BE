@@ -46,7 +46,6 @@ async function bootstrap() {
     .addTag('ingredients', 'Quản lý nguyên liệu')
     .addTag('recipes', 'Quản lý công thức')
     .addTag('stock-imports', 'Quản lý nhập kho')
-    .addTag('drinks', 'Quản lý thức uống')
     .addTag('orders', 'Quản lý đơn hàng')
     .addTag('payments', 'Quản lý thanh toán')
     .build();

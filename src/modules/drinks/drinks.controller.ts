@@ -14,6 +14,7 @@ import { DrinksService } from './drinks.service';
 import { CreateDrinkDto } from './dto/create-drink.dto';
 import { UpdateDrinkDto } from './dto/update-drink.dto';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -39,6 +40,7 @@ export class DrinksController {
     description: 'Đồ uống đã được tạo thành công',
     type: Drink,
   })
+  @ApiBearerAuth()
   create(@Body() createDrinkDto: CreateDrinkDto) {
     return this.drinksService.create(createDrinkDto);
   }
@@ -69,6 +71,7 @@ export class DrinksController {
   @UseGuards(AuthGuard, RoleGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Đồ uống đã được cập nhật',
     type: Drink,
@@ -83,6 +86,7 @@ export class DrinksController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Xóa đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiBearerAuth()
   remove(@Param('id') id: string) {
     return this.drinksService.remove(+id);
   }
