@@ -76,7 +76,9 @@ describe('DrinksController', () => {
         price: 29000,
       };
 
-      const createSpy = jest.spyOn(service, 'create').mockResolvedValueOnce(mockDrink);
+      const createSpy = jest
+        .spyOn(service, 'create')
+        .mockResolvedValueOnce(mockDrink);
 
       // Act
       const result = await controller.create(createDrinkDto);
@@ -90,7 +92,9 @@ describe('DrinksController', () => {
   describe('findAll', () => {
     it('should return an array of drinks', async () => {
       // Arrange
-      const findAllSpy = jest.spyOn(service, 'findAll').mockResolvedValueOnce(mockDrinksList);
+      const findAllSpy = jest
+        .spyOn(service, 'findAll')
+        .mockResolvedValueOnce(mockDrinksList);
 
       // Act
       const result = await controller.findAll();
@@ -104,7 +108,9 @@ describe('DrinksController', () => {
   describe('findOne', () => {
     it('should return a single drink', async () => {
       // Arrange
-      const findOneSpy = jest.spyOn(service, 'findOne').mockResolvedValueOnce(mockDrink);
+      const findOneSpy = jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValueOnce(mockDrink);
 
       // Act
       const result = await controller.findOne('1');
@@ -116,11 +122,14 @@ describe('DrinksController', () => {
 
     it('should throw an exception if drink not found', async () => {
       // Arrange
-      const findOneSpy = jest.spyOn(service, 'findOne')
+      const findOneSpy = jest
+        .spyOn(service, 'findOne')
         .mockRejectedValueOnce(new NotFoundException());
 
       // Act & Assert
-      await expect(controller.findOne('999')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('999')).rejects.toThrow(
+        NotFoundException,
+      );
       expect(findOneSpy).toHaveBeenCalledWith(999);
     });
   });
@@ -133,7 +142,8 @@ describe('DrinksController', () => {
       };
       const updatedDrink = { ...mockDrink, price: 32000 } as Drink;
 
-      const updateSpy = jest.spyOn(service, 'update')
+      const updateSpy = jest
+        .spyOn(service, 'update')
         .mockResolvedValueOnce(updatedDrink);
 
       // Act
@@ -150,11 +160,14 @@ describe('DrinksController', () => {
         price: 32000,
       };
 
-      const updateSpy = jest.spyOn(service, 'update')
+      const updateSpy = jest
+        .spyOn(service, 'update')
         .mockRejectedValueOnce(new NotFoundException());
 
       // Act & Assert
-      await expect(controller.update('999', updateDrinkDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.update('999', updateDrinkDto)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(updateSpy).toHaveBeenCalledWith(999, updateDrinkDto);
     });
   });
@@ -162,7 +175,9 @@ describe('DrinksController', () => {
   describe('remove', () => {
     it('should remove a drink', async () => {
       // Arrange
-      const removeSpy = jest.spyOn(service, 'remove').mockResolvedValueOnce(undefined);
+      const removeSpy = jest
+        .spyOn(service, 'remove')
+        .mockResolvedValueOnce(undefined);
 
       // Act
       const result = await controller.remove('1');
@@ -174,7 +189,8 @@ describe('DrinksController', () => {
 
     it('should throw an exception if drink not found', async () => {
       // Arrange
-      const removeSpy = jest.spyOn(service, 'remove')
+      const removeSpy = jest
+        .spyOn(service, 'remove')
         .mockRejectedValueOnce(new NotFoundException());
 
       // Act & Assert
