@@ -1,11 +1,11 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 
@@ -26,11 +26,11 @@ export enum PaymentStatus {
 
 @Entity('payments')
 export class Payment {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 36 })
+  id: string;
 
-  @Column({ type: 'bigint', unsigned: true })
-  orderId: number;
+  @Column({ type: 'varchar', length: 36 })
+  orderId: string;
 
   @Column({ type: 'bigint' })
   transactionId: number;

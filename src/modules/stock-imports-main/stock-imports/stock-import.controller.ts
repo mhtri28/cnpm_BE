@@ -9,7 +9,6 @@ import {
   UseGuards,
   ClassSerializerInterceptor,
   UseInterceptors,
-  ParseIntPipe,
   Patch,
 } from '@nestjs/common';
 import { CreateStockImportDto } from '../dto/create-stock-import.dto';
@@ -61,7 +60,7 @@ export class StockImportController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Get(':id')
   @Roles(EmployeeRole.INVENTORY_MANAGER)
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.stockImportService.findOne(id);
   }
 
@@ -73,7 +72,7 @@ export class StockImportController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Put(':id')
   update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateStockImportDto: UpdateStockImportDto,
   ) {
     return this.stockImportService.update(id, updateStockImportDto);
@@ -83,7 +82,7 @@ export class StockImportController {
   @ApiResponse({ status: 200, description: 'Phiếu nhập kho đã được xóa mềm' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.stockImportService.remove(id);
   }
 
@@ -91,7 +90,7 @@ export class StockImportController {
   @ApiResponse({ status: 200, description: 'Phiếu nhập kho đã được khôi phục' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Patch(':id')
-  restore(@Param('id', ParseIntPipe) id: number) {
+  restore(@Param('id') id: string) {
     return this.stockImportService.restore(id);
   }
 }

@@ -84,10 +84,10 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     // Orders table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS orders (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
         employeeId BIGINT UNSIGNED NOT NULL,
         tableId VARCHAR(36) NULL,
-        status ENUM('pending', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'pending',
+        status ENUM('paid', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'paid',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (employeeId) REFERENCES employees(id),
@@ -99,7 +99,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS order_items (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        orderId BIGINT UNSIGNED NOT NULL,
+        orderId VARCHAR(36) NOT NULL,
         drinkId BIGINT UNSIGNED NOT NULL,
         priceAtOrder DECIMAL(8, 2) NOT NULL,
         quantity BIGINT NOT NULL,
@@ -112,8 +112,8 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     // Payments table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS payments (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        orderId BIGINT UNSIGNED NOT NULL,
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        orderId VARCHAR(36) NOT NULL,
         transactionId BIGINT NOT NULL,
         totalAmount DECIMAL(8, 2) NOT NULL,
         method ENUM('cash', 'card', 'momo', 'zalo_pay', 'vnpay') NOT NULL,
@@ -127,7 +127,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     // Stock imports table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS stock_imports (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
         employeeId BIGINT UNSIGNED NOT NULL,
         supplierId BIGINT UNSIGNED NOT NULL,
         totalCost DECIMAL(8, 2) NOT NULL,
@@ -144,7 +144,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS stock_import_items (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         ingredientId BIGINT UNSIGNED NOT NULL,
-        stockImportId BIGINT UNSIGNED NOT NULL,
+        stockImportId VARCHAR(36) NOT NULL,
         unitPrice DECIMAL(8, 2) NOT NULL,
         quantity BIGINT NOT NULL,
         subTotal DECIMAL(8, 2) NOT NULL,

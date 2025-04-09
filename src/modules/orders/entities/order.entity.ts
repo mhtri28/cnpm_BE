@@ -1,13 +1,13 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   OneToMany,
   OneToOne,
+  PrimaryColumn,
 } from 'typeorm';
 import { Employee } from '../../employees/entities/employee.entity';
 import { OrderItem } from './order-item.entity';
@@ -15,7 +15,7 @@ import { Payment } from '../../payments/entities/payment.entity';
 import { Table } from '../../tables/entities/table.entity';
 
 export enum OrderStatus {
-  PENDING = 'pending',
+  PAID = 'paid',
   PREPARING = 'preparing',
   COMPLETED = 'completed',
   CANCELED = 'canceled',
@@ -23,8 +23,8 @@ export enum OrderStatus {
 
 @Entity('orders')
 export class Order {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 36 })
+  id: string;
 
   @Column({ type: 'bigint', unsigned: true })
   employeeId: number;
@@ -35,7 +35,7 @@ export class Order {
   @Column({
     type: 'enum',
     enum: OrderStatus,
-    default: OrderStatus.PENDING,
+    default: OrderStatus.PAID,
   })
   status: OrderStatus;
 

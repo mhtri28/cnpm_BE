@@ -1,23 +1,17 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { Ingredient } from '../../ingredients/entities/ingredient.entity';
 import { StockImport } from './stock-import.entity';
 
 @Entity('stock_import_items')
 export class StockImportItem {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 36 })
+  id: string;
 
   @Column({ type: 'bigint', unsigned: true })
   ingredientId: number;
 
-  @Column({ type: 'bigint', unsigned: true })
-  stockImportId: number;
+  @Column({ type: 'varchar', length: 36 })
+  stockImportId: string;
 
   @Column('decimal', { precision: 8, scale: 2 })
   unitPrice: number;

@@ -6,6 +6,7 @@ import { CreateStockImportDto } from '../dto/create-stock-import.dto';
 import { UpdateStockImportDto } from '../dto/update-stock-import.dto';
 import { Employee } from '../../employees/entities/employee.entity';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class StockImportService {
@@ -37,6 +38,7 @@ export class StockImportService {
     }
 
     const stockImport = this.stockImportRepo.create({
+      id: uuidv4(),
       ...rest,
       employee,
       supplier,
@@ -52,7 +54,7 @@ export class StockImportService {
   }
 
   // Lấy một Stock Import theo ID
-  async findOne(id: number) {
+  async findOne(id: string) {
     const stockImport = await this.stockImportRepo.findOne({
       where: { id },
       relations: ['supplier', 'stockImportItems', 'employee'],
@@ -63,7 +65,7 @@ export class StockImportService {
   }
 
   // Cập nhật Stock Import
-  async update(id: number, updateStockImportDto: UpdateStockImportDto) {
+  async update(id: string, updateStockImportDto: UpdateStockImportDto) {
     const { employeeId, supplierId, ...rest } = updateStockImportDto;
 
     const stockImport = await this.stockImportRepo.findOne({
@@ -99,7 +101,7 @@ export class StockImportService {
   }
 
   // Xóa Stock Import
-  async remove(id: number) {
+  async remove(id: string) {
     const result = await this.stockImportRepo.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Stock Import with ID ${id} not found`);
@@ -107,7 +109,7 @@ export class StockImportService {
     return { message: 'Stock Import deleted successfully' };
   }
 
-  async restore(id: number) {
+  async restore(id: string) {
     const result = await this.stockImportRepo.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Stock Import with ID ${id} not found`);
