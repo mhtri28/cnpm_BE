@@ -1,13 +1,13 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
   OneToMany,
+  PrimaryColumn,
 } from 'typeorm';
 import { Employee } from '../../employees/entities/employee.entity';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
@@ -15,8 +15,8 @@ import { StockImportItem } from './stock-import-item.entity';
 
 @Entity('stock_imports')
 export class StockImport {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 36 })
+  id: string;
 
   @Column({ type: 'bigint', unsigned: true })
   employeeId: number;

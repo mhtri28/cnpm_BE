@@ -10,6 +10,13 @@ import { Recipe } from '../../modules/recipes/entities/recipe.entity';
 import { StockImport } from '../../modules/stock-imports-main/entities/stock-import.entity';
 import { StockImportItem } from '../../modules/stock-imports-main/entities/stock-import-item.entity';
 import { Table } from '../../modules/tables/entities/table.entity';
+import { Order, OrderStatus } from '../../modules/orders/entities/order.entity';
+import { OrderItem } from '../../modules/orders/entities/order-item.entity';
+import {
+  Payment,
+  PaymentMethod,
+  PaymentStatus,
+} from '../../modules/payments/entities/payment.entity';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -27,6 +34,9 @@ async function seed() {
     const stockImportItemRepository =
       AppDataSource.getRepository(StockImportItem);
     const tableRepository = AppDataSource.getRepository(Table);
+    const orderRepository = AppDataSource.getRepository(Order);
+    const orderItemRepository = AppDataSource.getRepository(OrderItem);
+    const paymentRepository = AppDataSource.getRepository(Payment);
 
     // 1. Tạo nhân viên
     const defaultPassword = await bcrypt.hash('password123', 10);
@@ -64,16 +74,6 @@ async function seed() {
         await tableRepository.save({
           id: uuidv4(),
           name: `Bàn ${i}`,
-        }),
-      );
-    }
-
-    // Thêm các bàn khu vực VIP
-    for (let i = 1; i <= 5; i++) {
-      tables.push(
-        await tableRepository.save({
-          id: uuidv4(),
-          name: `VIP ${i}`,
         }),
       );
     }
@@ -507,44 +507,41 @@ async function seed() {
 
     // 7. Tạo stock_imports
     console.log('Seeding stock imports...');
+    // Nhập hàng từ nhà cung cấp cà phê
     const stockImport1 = await stockImportRepository.save({
+      id: uuidv4(),
       employeeId: inventoryManager.id,
       supplierId: supplier1.id,
       totalCost: 2500000,
     });
 
+    // Nhập hàng từ nhà cung cấp sữa
     const stockImport2 = await stockImportRepository.save({
+      id: uuidv4(),
       employeeId: inventoryManager.id,
       supplierId: supplier2.id,
       totalCost: 1800000,
     });
 
+    // Nhập hàng từ nhà cung cấp trà
     const stockImport3 = await stockImportRepository.save({
+      id: uuidv4(),
       employeeId: inventoryManager.id,
       supplierId: supplier3.id,
       totalCost: 1200000,
     });
 
+    // Nhập hàng từ nhà cung cấp siro
     const stockImport4 = await stockImportRepository.save({
+      id: uuidv4(),
       employeeId: inventoryManager.id,
       supplierId: supplier4.id,
       totalCost: 900000,
     });
 
-    const stockImport5 = await stockImportRepository.save({
-      employeeId: admin.id,
-      supplierId: supplier1.id,
-      totalCost: 1500000,
-    });
-
-    const stockImport6 = await stockImportRepository.save({
-      employeeId: admin.id,
-      supplierId: supplier2.id,
-      totalCost: 950000,
-    });
-
     // 8. Tạo stock_import_items
     console.log('Seeding stock import items...');
+    // Nhập cà phê
     await stockImportItemRepository.save({
       ingredientId: coffee.id,
       stockImportId: stockImport1.id,
@@ -553,6 +550,7 @@ async function seed() {
       subTotal: 2500000,
     });
 
+    // Nhập sữa và đường
     await stockImportItemRepository.save({
       ingredientId: milk.id,
       stockImportId: stockImport2.id,
@@ -577,6 +575,7 @@ async function seed() {
       subTotal: 100000,
     });
 
+    // Nhập trà và các nguyên liệu liên quan
     await stockImportItemRepository.save({
       ingredientId: tea.id,
       stockImportId: stockImport3.id,
@@ -601,6 +600,7 @@ async function seed() {
       subTotal: 50000,
     });
 
+    // Nhập siro và các nguyên liệu liên quan
     await stockImportItemRepository.save({
       ingredientId: chocolate.id,
       stockImportId: stockImport4.id,
@@ -625,21 +625,78 @@ async function seed() {
       subTotal: 270000,
     });
 
-    await stockImportItemRepository.save({
-      ingredientId: coffee.id,
-      stockImportId: stockImport5.id,
-      unitPrice: 250,
-      quantity: 6000,
-      subTotal: 1500000,
-    });
+    // 9. Tạo đơn hàng giả
+    console.log('Seeding orders...');
+    const drinks = [
+      americano,
+      latte,
+      cappuccino,
+      espresso,
+      mocha,
+      blackTea,
+      greenTeaLatte,
+      hotChocolate,
+      vanillaLatte,
+      caramelMacchiato,
+      icedCoffee,
+      lemonTea,
+      mintMojito,
+    ];
 
-    await stockImportItemRepository.save({
-      ingredientId: milk.id,
-      stockImportId: stockImport6.id,
-      unitPrice: 190,
-      quantity: 5000,
-      subTotal: 950000,
-    });
+    // Tạo 50 đơn hàng trong 7 ngày qua
+    for (let i = 0; i < 50; i++) {
+      const randomTable = tables[Math.floor(Math.random() * tables.length)];
+      const randomDrink = drinks[Math.floor(Math.random() * drinks.length)];
+      const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 ly
+      const subTotal = randomDrink.price * quantity;
+      const orderDate = new Date(
+        Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
+      );
+
+      // Tạo đơn hàng
+      const order = await orderRepository.save({
+        id: uuidv4(),
+        employeeId: barista.id,
+        tableId: randomTable.id,
+        status: OrderStatus.COMPLETED,
+        createdAt: orderDate,
+      });
+
+      // Tạo chi tiết đơn hàng
+      await orderItemRepository.save({
+        orderId: order.id,
+        drinkId: randomDrink.id,
+        priceAtOrder: randomDrink.price,
+        quantity: quantity,
+        subTotal: subTotal,
+      });
+
+      // Tạo thanh toán
+      const paymentMethods = [
+        PaymentMethod.CASH,
+        PaymentMethod.CARD,
+        PaymentMethod.MOMO,
+        PaymentMethod.ZALO_PAY,
+        PaymentMethod.VNPAY,
+      ];
+      const randomMethod =
+        paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+      await paymentRepository.save({
+        id: uuidv4(),
+        orderId: order.id,
+        transactionId: Math.floor(Math.random() * 1000000),
+        totalAmount: subTotal,
+        method: randomMethod,
+        status: PaymentStatus.COMPLETED,
+        createdAt: order.createdAt,
+      });
+
+      // Cập nhật số lượng đã bán
+      await drinkRepository.update(randomDrink.id, {
+        soldCount: randomDrink.soldCount + quantity,
+      });
+    }
 
     console.log('Seeding completed successfully');
   } catch (error) {

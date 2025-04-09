@@ -1,20 +1,14 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Order } from './order.entity';
 import { Drink } from '../../drinks/entities/drink.entity';
 
 @Entity('order_items')
 export class OrderItem {
-  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 36 })
+  id: string;
 
-  @Column({ type: 'bigint', unsigned: true })
-  orderId: number;
+  @Column({ type: 'varchar', length: 36 })
+  orderId: string;
 
   @Column({ type: 'bigint', unsigned: true })
   drinkId: number;
