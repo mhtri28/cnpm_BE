@@ -12,6 +12,7 @@ import {
 import { Employee } from '../../employees/entities/employee.entity';
 import { OrderItem } from './order-item.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { Table } from '../../tables/entities/table.entity';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -27,6 +28,9 @@ export class Order {
 
   @Column({ type: 'bigint', unsigned: true })
   employeeId: number;
+
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  tableId: string;
 
   @Column({
     type: 'enum',
@@ -44,6 +48,10 @@ export class Order {
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employeeId' })
   employee: Employee;
+
+  @ManyToOne(() => Table)
+  @JoinColumn({ name: 'tableId' })
+  table: Table;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
   orderItems: OrderItem[];

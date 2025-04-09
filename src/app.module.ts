@@ -20,6 +20,8 @@ import { StockImportsModule } from './modules/stock-imports-main/stock-imports.m
 import { GuardModule } from './guard/guard.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { IngredientsModule } from './modules/ingredients/ingredients.module';
+import { Table } from './modules/tables/entities/table.entity';
+import { TablesModule } from './modules/tables/tables.module';
 
 config();
 
@@ -46,6 +48,7 @@ config();
         Recipe,
         StockImport,
         StockImportItem,
+        Table,
       ],
       synchronize: false,
       logging: true,
@@ -56,6 +59,7 @@ config();
     RecipesModule,
     GuardModule,
     IngredientsModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

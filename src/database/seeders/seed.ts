@@ -9,7 +9,9 @@ import { Drink } from '../../modules/drinks/entities/drink.entity';
 import { Recipe } from '../../modules/recipes/entities/recipe.entity';
 import { StockImport } from '../../modules/stock-imports-main/entities/stock-import.entity';
 import { StockImportItem } from '../../modules/stock-imports-main/entities/stock-import-item.entity';
+import { Table } from '../../modules/tables/entities/table.entity';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 async function seed() {
   try {
@@ -24,6 +26,7 @@ async function seed() {
     const stockImportRepository = AppDataSource.getRepository(StockImport);
     const stockImportItemRepository =
       AppDataSource.getRepository(StockImportItem);
+    const tableRepository = AppDataSource.getRepository(Table);
 
     // 1. Tạo nhân viên
     const defaultPassword = await bcrypt.hash('password123', 10);
@@ -52,7 +55,23 @@ async function seed() {
       role: EmployeeRole.INVENTORY_MANAGER,
     });
 
-    // 2. Tạo nhà cung cấp
+    // 2. Tạo bàn
+    await tableRepository.save({
+      id: uuidv4(),
+      name: 'Bàn 1',
+    });
+
+    await tableRepository.save({
+      id: uuidv4(),
+      name: 'Bàn 2',
+    });
+
+    await tableRepository.save({
+      id: uuidv4(),
+      name: 'Bàn 3',
+    });
+
+    // 3. Tạo nhà cung cấp
     const supplier1 = await supplierRepository.save({
       name: 'Coffee Bean Supplier',
       phone: '0987654321',
@@ -67,7 +86,7 @@ async function seed() {
       address: '456 Dairy Road, City',
     });
 
-    // 3. Tạo nguyên liệu
+    // 4. Tạo nguyên liệu
     const coffee = await ingredientRepository.save({
       name: 'Coffee Beans',
       availableCount: 1000,
@@ -86,7 +105,7 @@ async function seed() {
       supplierId: supplier2.id,
     });
 
-    // 4. Tạo đồ uống
+    // 5. Tạo đồ uống
     const americano = await drinkRepository.save({
       name: 'Americano',
       price: 35000,
@@ -99,7 +118,7 @@ async function seed() {
       soldCount: 0,
     });
 
-    // 5. Tạo công thức
+    // 6. Tạo công thức
     await recipeRepository.save({
       drinkId: americano.id,
       ingredientId: coffee.id,
@@ -118,7 +137,7 @@ async function seed() {
       quantity: 150,
     });
 
-    // 6. Tạo stock_imports
+    // 7. Tạo stock_imports
     const stockImport1 = await stockImportRepository.save({
       employeeId: inventoryManager.id,
       supplierId: supplier1.id,
@@ -131,7 +150,7 @@ async function seed() {
       totalCost: 500.0,
     });
 
-    // 7. Tạo stock_import_items
+    // 8. Tạo stock_import_items
     await stockImportItemRepository.save({
       ingredientId: coffee.id,
       stockImportId: stockImport1.id,
