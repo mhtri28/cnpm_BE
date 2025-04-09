@@ -32,7 +32,7 @@ export class StockImportItemService {
     }
 
     const stockImport = await this.stockImportRepo.findOne({
-      where: { id: stockImportId },
+      where: { id: String(stockImportId) },
     });
     if (!stockImport) {
       throw new NotFoundException(
@@ -56,7 +56,7 @@ export class StockImportItemService {
   }
 
   // Lấy một Stock Import Item theo ID
-  async findOne(id: number) {
+  async findOne(id: string) {
     const stockImportItem = await this.stockImportItemRepo.findOne({
       where: { id },
       relations: ['ingredient', 'stockImport'],
@@ -67,7 +67,7 @@ export class StockImportItemService {
   }
 
   // Cập nhật Stock Import Item
-  async update(id: number, updateStockImportItemDto: UpdateStockImportItemDto) {
+  async update(id: string, updateStockImportItemDto: UpdateStockImportItemDto) {
     const { ingredientId, stockImportId, ...rest } = updateStockImportItemDto;
 
     const stockImportItem = await this.stockImportItemRepo.findOne({
@@ -92,7 +92,7 @@ export class StockImportItemService {
 
     if (stockImportId) {
       const stockImport = await this.stockImportRepo.findOne({
-        where: { id: stockImportId },
+        where: { id: String(stockImportId) },
       });
       if (!stockImport) {
         throw new NotFoundException(
@@ -107,7 +107,7 @@ export class StockImportItemService {
   }
 
   // Xóa Stock Import Item
-  async remove(id: number) {
+  async remove(id: string) {
     const result = await this.stockImportItemRepo.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
@@ -115,7 +115,7 @@ export class StockImportItemService {
     return { message: 'Stock Import Item deleted successfully' };
   }
 
-  async restore(id: number) {
+  async restore(id: string) {
     const result = await this.stockImportItemRepo.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Stock Import Item with ID ${id} not found`);

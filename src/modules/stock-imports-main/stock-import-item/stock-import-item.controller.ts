@@ -9,7 +9,6 @@ import {
   UseGuards,
   ClassSerializerInterceptor,
   UseInterceptors,
-  ParseIntPipe,
   Patch,
 } from '@nestjs/common';
 import { CreateStockImportItemDto } from '../dto/create-stock-import-item.dto';
@@ -42,25 +41,25 @@ export class StockImportItemController {
 
   @Get(':id')
   @Roles(EmployeeRole.INVENTORY_MANAGER)
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.stockImportItemService.findOne(id);
   }
 
   @Put(':id')
   update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateStockImportItemDto: UpdateStockImportItemDto,
   ) {
     return this.stockImportItemService.update(id, updateStockImportItemDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.stockImportItemService.remove(id);
   }
 
   @Patch(':id')
-  restore(@Param('id', ParseIntPipe) id: number) {
+  restore(@Param('id') id: string) {
     return this.stockImportItemService.restore(id);
   }
 }
