@@ -22,17 +22,46 @@ async function bootstrap() {
     }),
   );
 
+  // Cấu hình CORS
+  app.enableCors();
+
   // Swagger setup
-  const config = new DocumentBuilder()
-    .setTitle('Cafe Management API')
-    .setDescription('API documentation for Cafe Management System')
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Quản lý Quán Cafe API')
+    .setDescription('Tài liệu API cho hệ thống quản lý quán cafe')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Nhập JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addTag('employees', 'Quản lý nhân viên')
+    .addTag('suppliers', 'Quản lý nhà cung cấp')
+    .addTag('ingredients', 'Quản lý nguyên liệu')
+    .addTag('recipes', 'Quản lý công thức')
+    .addTag('stock-imports', 'Quản lý nhập kho')
+    .addTag('drinks', 'Quản lý thức uống')
+    .addTag('orders', 'Quản lý đơn hàng')
+    .addTag('payments', 'Quản lý thanh toán')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
+  console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(
+    `Swagger documentation is available at: ${await app.getUrl()}/api/docs`,
+  );
 }
 bootstrap();

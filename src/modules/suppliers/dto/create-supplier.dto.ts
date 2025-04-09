@@ -4,7 +4,6 @@ import { Length } from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
 
-
 export class CreateSupplierDto {
   @IsNotEmpty()
   @Length(1, 50)

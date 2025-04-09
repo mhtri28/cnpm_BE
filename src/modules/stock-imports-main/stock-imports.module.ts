@@ -6,4 +6,4 @@ import { StockImportItemModule } from './stock-import-item/stock-import-item.mod
   imports: [StockImportModule, StockImportItemModule],
   exports: [StockImportModule, StockImportItemModule],
 })
-export class StockImportsModule {} 
+export class StockImportsModule {}

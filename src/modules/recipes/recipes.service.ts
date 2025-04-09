@@ -12,7 +12,8 @@ export class RecipesService {
   constructor(
     @InjectRepository(Recipe) private recipeRepo: Repository<Recipe>,
     @InjectRepository(Drink) private drinkRepo: Repository<Drink>,
-    @InjectRepository(Ingredient) private ingredientRepo: Repository<Ingredient>,
+    @InjectRepository(Ingredient)
+    private ingredientRepo: Repository<Ingredient>,
   ) {}
 
   async create(createRecipeDto: CreateRecipeDto) {
@@ -29,7 +30,9 @@ export class RecipesService {
       where: { id: ingredientId },
     });
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${ingredientId} not found`);
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredientId} not found`,
+      );
     }
 
     const recipe = this.recipeRepo.create({
@@ -84,7 +87,9 @@ export class RecipesService {
         where: { id: ingredientId },
       });
       if (!ingredient) {
-        throw new NotFoundException(`Ingredient with ID ${ingredientId} not found`);
+        throw new NotFoundException(
+          `Ingredient with ID ${ingredientId} not found`,
+        );
       }
       recipe.ingredient = ingredient;
     }
@@ -116,10 +121,10 @@ export class RecipesService {
   }
 
   async restore(id: number) {
-      const result = await this.recipeRepo.restore(id);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Recipe with ID ${id} not found`);
-      }
-      return this.findById(id);
+    const result = await this.recipeRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
+    return this.findById(id);
+  }
 }

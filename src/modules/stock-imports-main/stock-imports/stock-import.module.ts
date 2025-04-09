@@ -10,7 +10,12 @@ import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StockImport, StockImportItem, Employee, Supplier]),
+    TypeOrmModule.forFeature([
+      StockImport,
+      StockImportItem,
+      Employee,
+      Supplier,
+    ]),
     GuardModule,
   ],
   providers: [StockImportService],

@@ -9,7 +9,8 @@ import { Supplier } from '../suppliers/entities/supplier.entity';
 @Injectable()
 export class IngredientsService {
   constructor(
-    @InjectRepository(Ingredient) private ingredientRepo: Repository<Ingredient>,
+    @InjectRepository(Ingredient)
+    private ingredientRepo: Repository<Ingredient>,
     @InjectRepository(Supplier) private supplierRepo: Repository<Supplier>,
   ) {}
 
@@ -95,5 +96,4 @@ export class IngredientsService {
     }
     return this.findById(id);
   }
-  
 }

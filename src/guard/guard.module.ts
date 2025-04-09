@@ -16,4 +16,4 @@ import { AuthService } from './auth.service';
   providers: [AuthGuard, RoleGuard, AuthService],
   exports: [AuthGuard, RoleGuard, AuthService],
 })
-export class GuardModule {} 
+export class GuardModule {}

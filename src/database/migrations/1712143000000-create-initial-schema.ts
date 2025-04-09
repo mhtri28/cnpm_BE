@@ -17,6 +17,17 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       )
     `);
 
+    // Tables table
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS tables (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+        deletedAt TIMESTAMP NULL
+      )
+    `);
+
     // Suppliers table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS suppliers (
@@ -75,10 +86,12 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS orders (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         employeeId BIGINT UNSIGNED NOT NULL,
+        tableId VARCHAR(36) NULL,
         status ENUM('pending', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (employeeId) REFERENCES employees(id)
+        FOREIGN KEY (employeeId) REFERENCES employees(id),
+        FOREIGN KEY (tableId) REFERENCES tables(id)
       )
     `);
 
@@ -152,6 +165,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS ingredients`);
     await queryRunner.query(`DROP TABLE IF EXISTS drinks`);
     await queryRunner.query(`DROP TABLE IF EXISTS suppliers`);
+    await queryRunner.query(`DROP TABLE IF EXISTS tables`);
     await queryRunner.query(`DROP TABLE IF EXISTS employees`);
   }
 }

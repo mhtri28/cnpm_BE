@@ -6,10 +6,7 @@ import { SupplierService } from './suppliers.service';
 import { GuardModule } from '../../guard/guard.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Supplier]),
-    GuardModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Supplier]), GuardModule],
   providers: [SupplierService],
   controllers: [SupplierController],
   exports: [SupplierService],

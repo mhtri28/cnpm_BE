@@ -9,7 +9,9 @@ import { Drink } from '../../modules/drinks/entities/drink.entity';
 import { Recipe } from '../../modules/recipes/entities/recipe.entity';
 import { StockImport } from '../../modules/stock-imports-main/entities/stock-import.entity';
 import { StockImportItem } from '../../modules/stock-imports-main/entities/stock-import-item.entity';
+import { Table } from '../../modules/tables/entities/table.entity';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 async function seed() {
   try {
@@ -24,11 +26,12 @@ async function seed() {
     const stockImportRepository = AppDataSource.getRepository(StockImport);
     const stockImportItemRepository =
       AppDataSource.getRepository(StockImportItem);
+    const tableRepository = AppDataSource.getRepository(Table);
 
     // 1. Tạo nhân viên
     const defaultPassword = await bcrypt.hash('password123', 10);
 
-    await employeeRepository.save({
+    const admin = await employeeRepository.save({
       name: 'Admin User',
       email: 'admin@coffee.com',
       phone: '0123456789',
@@ -36,10 +39,10 @@ async function seed() {
       role: EmployeeRole.ADMIN,
     });
 
-    await employeeRepository.save({
+    const barista = await employeeRepository.save({
       name: 'Barista User',
       email: 'barista@coffee.com',
-      phone: '0123456789',
+      phone: '0123456781',
       password: defaultPassword,
       role: EmployeeRole.BARISTA,
     });
@@ -47,12 +50,36 @@ async function seed() {
     const inventoryManager = await employeeRepository.save({
       name: 'Inventory Manager',
       email: 'inventory@coffee.com',
-      phone: '0123456789',
+      phone: '0123456782',
       password: defaultPassword,
       role: EmployeeRole.INVENTORY_MANAGER,
     });
 
-    // 2. Tạo nhà cung cấp
+    // 2. Tạo bàn
+    console.log('Seeding tables...');
+    const tables: Table[] = [];
+
+    for (let i = 1; i <= 15; i++) {
+      tables.push(
+        await tableRepository.save({
+          id: uuidv4(),
+          name: `Bàn ${i}`,
+        }),
+      );
+    }
+
+    // Thêm các bàn khu vực VIP
+    for (let i = 1; i <= 5; i++) {
+      tables.push(
+        await tableRepository.save({
+          id: uuidv4(),
+          name: `VIP ${i}`,
+        }),
+      );
+    }
+
+    // 3. Tạo nhà cung cấp
+    console.log('Seeding suppliers...');
     const supplier1 = await supplierRepository.save({
       name: 'Coffee Bean Supplier',
       phone: '0987654321',
@@ -67,26 +94,96 @@ async function seed() {
       address: '456 Dairy Road, City',
     });
 
-    // 3. Tạo nguyên liệu
+    const supplier3 = await supplierRepository.save({
+      name: 'Tea & Spices Supplier',
+      phone: '0987654323',
+      email: 'tea@supplier.com',
+      address: '789 Tea Avenue, City',
+    });
+
+    const supplier4 = await supplierRepository.save({
+      name: 'Syrup & Flavors Supplier',
+      phone: '0987654324',
+      email: 'flavors@supplier.com',
+      address: '101 Flavor Boulevard, City',
+    });
+
+    // 4. Tạo nguyên liệu
+    console.log('Seeding ingredients...');
     const coffee = await ingredientRepository.save({
       name: 'Coffee Beans',
-      availableCount: 1000,
+      availableCount: 10000,
       supplierId: supplier1.id,
     });
 
     const milk = await ingredientRepository.save({
       name: 'Fresh Milk',
-      availableCount: 500,
+      availableCount: 5000,
       supplierId: supplier2.id,
     });
 
-    await ingredientRepository.save({
+    const sugar = await ingredientRepository.save({
       name: 'Sugar',
-      availableCount: 800,
+      availableCount: 8000,
       supplierId: supplier2.id,
     });
 
-    // 4. Tạo đồ uống
+    const tea = await ingredientRepository.save({
+      name: 'Black Tea',
+      availableCount: 3000,
+      supplierId: supplier3.id,
+    });
+
+    const greenTea = await ingredientRepository.save({
+      name: 'Green Tea',
+      availableCount: 2500,
+      supplierId: supplier3.id,
+    });
+
+    const chocolate = await ingredientRepository.save({
+      name: 'Chocolate Powder',
+      availableCount: 2000,
+      supplierId: supplier4.id,
+    });
+
+    const vanillaSyrup = await ingredientRepository.save({
+      name: 'Vanilla Syrup',
+      availableCount: 1500,
+      supplierId: supplier4.id,
+    });
+
+    const caramelSyrup = await ingredientRepository.save({
+      name: 'Caramel Syrup',
+      availableCount: 1500,
+      supplierId: supplier4.id,
+    });
+
+    const whippedCream = await ingredientRepository.save({
+      name: 'Whipped Cream',
+      availableCount: 2000,
+      supplierId: supplier2.id,
+    });
+
+    const iceCubes = await ingredientRepository.save({
+      name: 'Ice Cubes',
+      availableCount: 10000,
+      supplierId: supplier2.id,
+    });
+
+    const lemonJuice = await ingredientRepository.save({
+      name: 'Lemon Juice',
+      availableCount: 1000,
+      supplierId: supplier3.id,
+    });
+
+    const mintLeaves = await ingredientRepository.save({
+      name: 'Mint Leaves',
+      availableCount: 500,
+      supplierId: supplier3.id,
+    });
+
+    // 5. Tạo đồ uống
+    console.log('Seeding drinks...');
     const americano = await drinkRepository.save({
       name: 'Americano',
       price: 35000,
@@ -99,13 +196,88 @@ async function seed() {
       soldCount: 0,
     });
 
-    // 5. Tạo công thức
+    const cappuccino = await drinkRepository.save({
+      name: 'Cappuccino',
+      price: 48000,
+      soldCount: 0,
+    });
+
+    const espresso = await drinkRepository.save({
+      name: 'Espresso',
+      price: 30000,
+      soldCount: 0,
+    });
+
+    const mocha = await drinkRepository.save({
+      name: 'Cafe Mocha',
+      price: 50000,
+      soldCount: 0,
+    });
+
+    const blackTea = await drinkRepository.save({
+      name: 'Black Tea',
+      price: 32000,
+      soldCount: 0,
+    });
+
+    const greenTeaLatte = await drinkRepository.save({
+      name: 'Green Tea Latte',
+      price: 45000,
+      soldCount: 0,
+    });
+
+    const hotChocolate = await drinkRepository.save({
+      name: 'Hot Chocolate',
+      price: 42000,
+      soldCount: 0,
+    });
+
+    const vanillaLatte = await drinkRepository.save({
+      name: 'Vanilla Latte',
+      price: 50000,
+      soldCount: 0,
+    });
+
+    const caramelMacchiato = await drinkRepository.save({
+      name: 'Caramel Macchiato',
+      price: 55000,
+      soldCount: 0,
+    });
+
+    const icedCoffee = await drinkRepository.save({
+      name: 'Iced Coffee',
+      price: 38000,
+      soldCount: 0,
+    });
+
+    const lemonTea = await drinkRepository.save({
+      name: 'Lemon Tea',
+      price: 35000,
+      soldCount: 0,
+    });
+
+    const mintMojito = await drinkRepository.save({
+      name: 'Mint Mojito Coffee',
+      price: 52000,
+      soldCount: 0,
+    });
+
+    // 6. Tạo công thức
+    console.log('Seeding recipes...');
+    // Americano
     await recipeRepository.save({
       drinkId: americano.id,
       ingredientId: coffee.id,
       quantity: 15,
     });
 
+    await recipeRepository.save({
+      drinkId: americano.id,
+      ingredientId: sugar.id,
+      quantity: 5,
+    });
+
+    // Latte
     await recipeRepository.save({
       drinkId: latte.id,
       ingredientId: coffee.id,
@@ -118,34 +290,355 @@ async function seed() {
       quantity: 150,
     });
 
-    // 6. Tạo stock_imports
+    await recipeRepository.save({
+      drinkId: latte.id,
+      ingredientId: sugar.id,
+      quantity: 10,
+    });
+
+    // Cappuccino
+    await recipeRepository.save({
+      drinkId: cappuccino.id,
+      ingredientId: coffee.id,
+      quantity: 12,
+    });
+
+    await recipeRepository.save({
+      drinkId: cappuccino.id,
+      ingredientId: milk.id,
+      quantity: 100,
+    });
+
+    await recipeRepository.save({
+      drinkId: cappuccino.id,
+      ingredientId: sugar.id,
+      quantity: 8,
+    });
+
+    // Espresso
+    await recipeRepository.save({
+      drinkId: espresso.id,
+      ingredientId: coffee.id,
+      quantity: 20,
+    });
+
+    // Mocha
+    await recipeRepository.save({
+      drinkId: mocha.id,
+      ingredientId: coffee.id,
+      quantity: 10,
+    });
+
+    await recipeRepository.save({
+      drinkId: mocha.id,
+      ingredientId: milk.id,
+      quantity: 120,
+    });
+
+    await recipeRepository.save({
+      drinkId: mocha.id,
+      ingredientId: chocolate.id,
+      quantity: 15,
+    });
+
+    await recipeRepository.save({
+      drinkId: mocha.id,
+      ingredientId: whippedCream.id,
+      quantity: 20,
+    });
+
+    // Black Tea
+    await recipeRepository.save({
+      drinkId: blackTea.id,
+      ingredientId: tea.id,
+      quantity: 10,
+    });
+
+    await recipeRepository.save({
+      drinkId: blackTea.id,
+      ingredientId: sugar.id,
+      quantity: 8,
+    });
+
+    // Green Tea Latte
+    await recipeRepository.save({
+      drinkId: greenTeaLatte.id,
+      ingredientId: greenTea.id,
+      quantity: 12,
+    });
+
+    await recipeRepository.save({
+      drinkId: greenTeaLatte.id,
+      ingredientId: milk.id,
+      quantity: 150,
+    });
+
+    await recipeRepository.save({
+      drinkId: greenTeaLatte.id,
+      ingredientId: sugar.id,
+      quantity: 10,
+    });
+
+    // Hot Chocolate
+    await recipeRepository.save({
+      drinkId: hotChocolate.id,
+      ingredientId: chocolate.id,
+      quantity: 25,
+    });
+
+    await recipeRepository.save({
+      drinkId: hotChocolate.id,
+      ingredientId: milk.id,
+      quantity: 180,
+    });
+
+    await recipeRepository.save({
+      drinkId: hotChocolate.id,
+      ingredientId: whippedCream.id,
+      quantity: 20,
+    });
+
+    // Vanilla Latte
+    await recipeRepository.save({
+      drinkId: vanillaLatte.id,
+      ingredientId: coffee.id,
+      quantity: 10,
+    });
+
+    await recipeRepository.save({
+      drinkId: vanillaLatte.id,
+      ingredientId: milk.id,
+      quantity: 150,
+    });
+
+    await recipeRepository.save({
+      drinkId: vanillaLatte.id,
+      ingredientId: vanillaSyrup.id,
+      quantity: 15,
+    });
+
+    // Caramel Macchiato
+    await recipeRepository.save({
+      drinkId: caramelMacchiato.id,
+      ingredientId: coffee.id,
+      quantity: 10,
+    });
+
+    await recipeRepository.save({
+      drinkId: caramelMacchiato.id,
+      ingredientId: milk.id,
+      quantity: 150,
+    });
+
+    await recipeRepository.save({
+      drinkId: caramelMacchiato.id,
+      ingredientId: caramelSyrup.id,
+      quantity: 20,
+    });
+
+    await recipeRepository.save({
+      drinkId: caramelMacchiato.id,
+      ingredientId: vanillaSyrup.id,
+      quantity: 10,
+    });
+
+    // Iced Coffee
+    await recipeRepository.save({
+      drinkId: icedCoffee.id,
+      ingredientId: coffee.id,
+      quantity: 15,
+    });
+
+    await recipeRepository.save({
+      drinkId: icedCoffee.id,
+      ingredientId: sugar.id,
+      quantity: 12,
+    });
+
+    await recipeRepository.save({
+      drinkId: icedCoffee.id,
+      ingredientId: iceCubes.id,
+      quantity: 80,
+    });
+
+    // Lemon Tea
+    await recipeRepository.save({
+      drinkId: lemonTea.id,
+      ingredientId: tea.id,
+      quantity: 8,
+    });
+
+    await recipeRepository.save({
+      drinkId: lemonTea.id,
+      ingredientId: lemonJuice.id,
+      quantity: 20,
+    });
+
+    await recipeRepository.save({
+      drinkId: lemonTea.id,
+      ingredientId: sugar.id,
+      quantity: 15,
+    });
+
+    // Mint Mojito Coffee
+    await recipeRepository.save({
+      drinkId: mintMojito.id,
+      ingredientId: coffee.id,
+      quantity: 12,
+    });
+
+    await recipeRepository.save({
+      drinkId: mintMojito.id,
+      ingredientId: mintLeaves.id,
+      quantity: 8,
+    });
+
+    await recipeRepository.save({
+      drinkId: mintMojito.id,
+      ingredientId: sugar.id,
+      quantity: 10,
+    });
+
+    await recipeRepository.save({
+      drinkId: mintMojito.id,
+      ingredientId: iceCubes.id,
+      quantity: 60,
+    });
+
+    // 7. Tạo stock_imports
+    console.log('Seeding stock imports...');
     const stockImport1 = await stockImportRepository.save({
       employeeId: inventoryManager.id,
       supplierId: supplier1.id,
-      totalCost: 1000.0,
+      totalCost: 2500000,
     });
 
     const stockImport2 = await stockImportRepository.save({
       employeeId: inventoryManager.id,
       supplierId: supplier2.id,
-      totalCost: 500.0,
+      totalCost: 1800000,
     });
 
-    // 7. Tạo stock_import_items
+    const stockImport3 = await stockImportRepository.save({
+      employeeId: inventoryManager.id,
+      supplierId: supplier3.id,
+      totalCost: 1200000,
+    });
+
+    const stockImport4 = await stockImportRepository.save({
+      employeeId: inventoryManager.id,
+      supplierId: supplier4.id,
+      totalCost: 900000,
+    });
+
+    const stockImport5 = await stockImportRepository.save({
+      employeeId: admin.id,
+      supplierId: supplier1.id,
+      totalCost: 1500000,
+    });
+
+    const stockImport6 = await stockImportRepository.save({
+      employeeId: admin.id,
+      supplierId: supplier2.id,
+      totalCost: 950000,
+    });
+
+    // 8. Tạo stock_import_items
+    console.log('Seeding stock import items...');
     await stockImportItemRepository.save({
       ingredientId: coffee.id,
       stockImportId: stockImport1.id,
-      unitPrice: 10.0,
-      quantity: 100,
-      subTotal: 1000.0,
+      unitPrice: 250,
+      quantity: 10000,
+      subTotal: 2500000,
     });
 
     await stockImportItemRepository.save({
       ingredientId: milk.id,
       stockImportId: stockImport2.id,
-      unitPrice: 5.0,
-      quantity: 100,
-      subTotal: 500.0,
+      unitPrice: 180,
+      quantity: 5000,
+      subTotal: 900000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: sugar.id,
+      stockImportId: stockImport2.id,
+      unitPrice: 100,
+      quantity: 8000,
+      subTotal: 800000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: whippedCream.id,
+      stockImportId: stockImport2.id,
+      unitPrice: 50,
+      quantity: 2000,
+      subTotal: 100000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: tea.id,
+      stockImportId: stockImport3.id,
+      unitPrice: 200,
+      quantity: 3000,
+      subTotal: 600000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: greenTea.id,
+      stockImportId: stockImport3.id,
+      unitPrice: 220,
+      quantity: 2500,
+      subTotal: 550000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: lemonJuice.id,
+      stockImportId: stockImport3.id,
+      unitPrice: 50,
+      quantity: 1000,
+      subTotal: 50000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: chocolate.id,
+      stockImportId: stockImport4.id,
+      unitPrice: 180,
+      quantity: 2000,
+      subTotal: 360000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: vanillaSyrup.id,
+      stockImportId: stockImport4.id,
+      unitPrice: 180,
+      quantity: 1500,
+      subTotal: 270000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: caramelSyrup.id,
+      stockImportId: stockImport4.id,
+      unitPrice: 180,
+      quantity: 1500,
+      subTotal: 270000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: coffee.id,
+      stockImportId: stockImport5.id,
+      unitPrice: 250,
+      quantity: 6000,
+      subTotal: 1500000,
+    });
+
+    await stockImportItemRepository.save({
+      ingredientId: milk.id,
+      stockImportId: stockImport6.id,
+      unitPrice: 190,
+      quantity: 5000,
+      subTotal: 950000,
     });
 
     console.log('Seeding completed successfully');

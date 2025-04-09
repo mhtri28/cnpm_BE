@@ -25,7 +25,7 @@ export class StockImportItem {
   @Column({ type: 'bigint' })
   quantity: number;
 
-  @Column('decimal', { precision: 8, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2 })
   subTotal: number;
 
   @ManyToOne(() => Ingredient, (ingredient) => ingredient.stockImportItems)
