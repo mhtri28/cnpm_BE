@@ -10,6 +10,31 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 
+// Định nghĩa interface cho payload của JWT token
+interface JwtPayload {
+  sub: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  [key: string]: any;
+}
+
+// Mở rộng kiểu Request để thêm thuộc tính currentUser
+interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
+
+declare module 'express' {
+  interface Request {
+    currentUser?: CurrentUser;
+  }
+}
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
@@ -20,14 +45,14 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
     try {
       // Xác thực token
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
 
@@ -56,8 +81,10 @@ export class AuthGuard implements CanActivate {
       this.logger.debug(
         `Current user set: ${JSON.stringify(request.currentUser)}`,
       );
-    } catch (error) {
-      this.logger.error(`Authentication failed: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Authentication failed: ${errorMessage}`);
       throw new UnauthorizedException('Invalid token');
     }
     return true;
