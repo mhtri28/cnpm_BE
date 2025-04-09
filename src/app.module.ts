@@ -22,6 +22,7 @@ import { RecipesModule } from './modules/recipes/recipes.module';
 import { IngredientsModule } from './modules/ingredients/ingredients.module';
 import { Table } from './modules/tables/entities/table.entity';
 import { TablesModule } from './modules/tables/tables.module';
+import { DrinksModule } from './modules/drinks/drinks/drinks.module';
 
 config();
 
@@ -60,6 +61,7 @@ config();
     GuardModule,
     IngredientsModule,
     TablesModule,
+    DrinksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
