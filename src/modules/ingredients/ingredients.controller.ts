@@ -35,7 +35,10 @@ export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
   @ApiOperation({ summary: 'Tạo nguyên liệu mới' })
-  @ApiResponse({ status: 201, description: 'Nguyên liệu đã được tạo thành công' })
+  @ApiResponse({
+    status: 201,
+    description: 'Nguyên liệu đã được tạo thành công',
+  })
   @Post()
   @Roles(EmployeeRole.ADMIN)
   create(@Body() createIngredientDto: CreateIngredientDto) {
@@ -43,7 +46,10 @@ export class IngredientsController {
   }
 
   @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
-  @ApiResponse({ status: 200, description: 'Trả về danh sách tất cả nguyên liệu' })
+  @ApiResponse({
+    status: 200,
+    description: 'Trả về danh sách tất cả nguyên liệu',
+  })
   @Get()
   @Roles(EmployeeRole.ADMIN)
   findAll() {
@@ -60,7 +66,10 @@ export class IngredientsController {
   }
 
   @ApiOperation({ summary: 'Cập nhật thông tin nguyên liệu' })
-  @ApiResponse({ status: 200, description: 'Thông tin nguyên liệu đã được cập nhật' })
+  @ApiResponse({
+    status: 200,
+    description: 'Thông tin nguyên liệu đã được cập nhật',
+  })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
   @Put(':id')
   @Roles(EmployeeRole.ADMIN)

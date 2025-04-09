@@ -25,4 +25,4 @@ export class UpdateStockImportDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   supplierId?: number;
-} 
+}

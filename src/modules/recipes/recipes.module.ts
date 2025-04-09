@@ -8,12 +8,9 @@ import { Drink } from '../drinks/entities/drink.entity';
 import { Ingredient } from '../ingredients/entities/ingredient.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Recipe, Drink, Ingredient]),
-    GuardModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Recipe, Drink, Ingredient]), GuardModule],
   providers: [RecipesService],
   controllers: [RecipesController],
   exports: [RecipesService],
 })
-export class RecipesModule {} 
+export class RecipesModule {}

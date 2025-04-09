@@ -1,4 +1,3 @@
-
 import { IsEmail } from 'class-validator';
 import { IsPhoneNumber } from 'class-validator';
 import { Length } from 'class-validator';

@@ -69,10 +69,10 @@ export class SupplierService {
   }
 
   async restore(id: number) {
-      const result = await this.supplierRepo.restore(id);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Supplier with ID ${id} not found`);
-      }
-      return this.findById(id);
+    const result = await this.supplierRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Supplier with ID ${id} not found`);
     }
+    return this.findById(id);
+  }
 }

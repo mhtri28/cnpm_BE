@@ -26,14 +26,18 @@ export class StockImportItemService {
       where: { id: ingredientId },
     });
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${ingredientId} not found`);
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredientId} not found`,
+      );
     }
 
     const stockImport = await this.stockImportRepo.findOne({
       where: { id: stockImportId },
     });
     if (!stockImport) {
-      throw new NotFoundException(`Stock Import with ID ${stockImportId} not found`);
+      throw new NotFoundException(
+        `Stock Import with ID ${stockImportId} not found`,
+      );
     }
 
     const stockImportItem = this.stockImportItemRepo.create({
@@ -79,7 +83,9 @@ export class StockImportItemService {
         where: { id: ingredientId },
       });
       if (!ingredient) {
-        throw new NotFoundException(`Ingredient with ID ${ingredientId} not found`);
+        throw new NotFoundException(
+          `Ingredient with ID ${ingredientId} not found`,
+        );
       }
       stockImportItem.ingredient = ingredient;
     }
@@ -89,7 +95,9 @@ export class StockImportItemService {
         where: { id: stockImportId },
       });
       if (!stockImport) {
-        throw new NotFoundException(`Stock Import with ID ${stockImportId} not found`);
+        throw new NotFoundException(
+          `Stock Import with ID ${stockImportId} not found`,
+        );
       }
       stockImportItem.stockImport = stockImport;
     }
@@ -108,10 +116,10 @@ export class StockImportItemService {
   }
 
   async restore(id: number) {
-      const result = await this.stockImportItemRepo.restore(id);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
-      }
-      return this.findOne(id);
+    const result = await this.stockImportItemRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Stock Import Item with ID ${id} not found`);
     }
+    return this.findOne(id);
+  }
 }

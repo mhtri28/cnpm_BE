@@ -108,10 +108,10 @@ export class StockImportService {
   }
 
   async restore(id: number) {
-      const result = await this.stockImportRepo.restore(id);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Stock Import with ID ${id} not found`);
-      }
-      return this.findOne(id);
+    const result = await this.stockImportRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Stock Import with ID ${id} not found`);
     }
+    return this.findOne(id);
+  }
 }

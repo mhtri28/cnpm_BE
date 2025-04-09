@@ -1,7 +1,6 @@
-import { IsNumber, Min } from "class-validator";
-import { Transform } from "class-transformer";
-import { IsOptional } from "class-validator";
-
+import { IsNumber, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 
 export class UpdateStockImportItemDto {
   @IsOptional()
@@ -36,4 +35,4 @@ export class UpdateStockImportItemDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   supplierId?: number;
-} 
+}

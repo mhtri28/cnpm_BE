@@ -17,4 +17,4 @@ export class UpdateRecipeDto {
   @Transform(({ value }) => Number(value))
   @Min(1)
   quantity?: number;
-} 
+}

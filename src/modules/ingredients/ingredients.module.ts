@@ -7,12 +7,9 @@ import { GuardModule } from '../../guard/guard.module';
 import { Supplier } from '../suppliers/entities/supplier.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Ingredient, Supplier]),
-    GuardModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Ingredient, Supplier]), GuardModule],
   providers: [IngredientsService],
   controllers: [IngredientsController],
   exports: [IngredientsService],
 })
-export class IngredientsModule {} 
+export class IngredientsModule {}

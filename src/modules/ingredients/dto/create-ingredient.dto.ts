@@ -16,4 +16,4 @@ export class CreateIngredientDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   supplierId: number;
-} 
+}
