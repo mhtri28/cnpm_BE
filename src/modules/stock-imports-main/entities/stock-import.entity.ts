@@ -24,7 +24,7 @@ export class StockImport {
   @Column({ type: 'bigint', unsigned: true })
   supplierId: number;
 
-  @Column('decimal', { precision: 8, scale: 2 })
+  @Column('decimal', { precision: 12, scale: 2 })
   totalCost: number;
 
   @CreateDateColumn()
