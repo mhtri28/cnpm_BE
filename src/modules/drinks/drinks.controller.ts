@@ -8,11 +8,13 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { DrinksService } from './drinks.service';
 import { CreateDrinkDto } from './dto/create-drink.dto';
 import { UpdateDrinkDto } from './dto/update-drink.dto';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -20,6 +22,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Drink } from './entities/drink.entity';
+import { AuthGuard } from '../../guard/auth.guard';
+import { EmployeeRole } from '../employees/entities/employee.entity';
+import { Roles } from '../../decorators/role.decorator';
+import { RoleGuard } from '../../guard/role.guard';
 
 @ApiTags('Đồ uống')
 @Controller('drinks')
@@ -27,11 +33,14 @@ export class DrinksController {
   constructor(private readonly drinksService: DrinksService) {}
 
   @Post()
+  @Roles(EmployeeRole.ADMIN)
+  @UseGuards(AuthGuard, RoleGuard)
   @ApiOperation({ summary: 'Tạo đồ uống mới' })
   @ApiCreatedResponse({
     description: 'Đồ uống đã được tạo thành công',
     type: Drink,
   })
+  @ApiBearerAuth()
   create(@Body() createDrinkDto: CreateDrinkDto) {
     return this.drinksService.create(createDrinkDto);
   }
@@ -58,8 +67,11 @@ export class DrinksController {
   }
 
   @Patch(':id')
+  @Roles(EmployeeRole.ADMIN)
+  @UseGuards(AuthGuard, RoleGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Đồ uống đã được cập nhật',
     type: Drink,
@@ -69,9 +81,12 @@ export class DrinksController {
   }
 
   @Delete(':id')
+  @Roles(EmployeeRole.ADMIN)
+  @UseGuards(AuthGuard, RoleGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Xóa đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiBearerAuth()
   remove(@Param('id') id: string) {
     return this.drinksService.remove(+id);
   }
