@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { config } from 'dotenv';
+import { SqlExceptionsFilter } from './filters/sql-exceptions.filter';
 
 // Load .env file
 config();
@@ -21,6 +22,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Thêm global filter cho SQL exceptions
+  app.useGlobalFilters(new SqlExceptionsFilter());
 
   // Cấu hình CORS
   app.enableCors();

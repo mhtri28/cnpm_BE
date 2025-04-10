@@ -94,6 +94,10 @@ describe('DrinksController', () => {
       const createDrinkDto: CreateDrinkDto = {
         name: 'Cà phê sữa đá',
         price: 29000,
+        recipe: [
+          { id: 1, quantity: 15 },
+          { id: 2, quantity: 30 },
+        ],
       };
 
       jest.spyOn(service, 'create').mockResolvedValueOnce(mockDrink);
@@ -161,6 +165,10 @@ describe('DrinksController', () => {
       // Arrange
       const updateDrinkDto: UpdateDrinkDto = {
         price: 32000,
+        recipe: [
+          { id: 1, quantity: 20 },
+          { id: 3, quantity: 25 },
+        ],
       };
       const updatedDrink = { ...mockDrink, price: 32000 } as Drink;
 
