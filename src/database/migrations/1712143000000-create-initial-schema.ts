@@ -87,7 +87,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         id VARCHAR(36) NOT NULL PRIMARY KEY,
         employeeId BIGINT UNSIGNED NOT NULL,
         tableId VARCHAR(36) NULL,
-        status ENUM('paid', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'paid',
+        status ENUM('pending', 'paid', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (employeeId) REFERENCES employees(id),
