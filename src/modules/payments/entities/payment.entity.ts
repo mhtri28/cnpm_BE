@@ -32,8 +32,8 @@ export class Payment {
   @Column({ type: 'varchar', length: 36 })
   orderId: string;
 
-  @Column({ type: 'bigint' })
-  transactionId: number;
+  @Column({ type: 'bigint', nullable: true })
+  transactionId: number | null;
 
   @Column('decimal', { precision: 8, scale: 2 })
   totalAmount: number;

@@ -23,6 +23,9 @@ import { IngredientsModule } from './modules/ingredients/ingredients.module';
 import { Table } from './modules/tables/entities/table.entity';
 import { TablesModule } from './modules/tables/tables.module';
 import { DrinksModule } from './modules/drinks/drinks.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import vnpayConfig from './modules/payments/config/vnpay.config';
 
 config();
 
@@ -30,6 +33,7 @@ config();
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [vnpayConfig],
     }),
     TypeOrmModule.forRoot({
       type: process.env.DATABASE_TYPE as 'mysql',
@@ -62,6 +66,8 @@ config();
     IngredientsModule,
     TablesModule,
     DrinksModule,
+    PaymentsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
