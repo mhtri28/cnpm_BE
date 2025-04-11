@@ -9,6 +9,7 @@ describe('CreateOrderDto', () => {
   beforeEach(() => {
     dto = new CreateOrderDto();
     dto.employeeId = 1;
+    dto.tableId = 'table-1';
     dto.orderItems = [
       { drinkId: '550e8400-e29b-41d4-a716-446655440000', quantity: 2 },
     ];
@@ -20,7 +21,6 @@ describe('CreateOrderDto', () => {
   });
 
   it('should be valid with optional fields', async () => {
-    dto.tableId = 'table1';
     dto.status = OrderStatus.PENDING;
 
     const errors = await validate(dto);
@@ -33,6 +33,14 @@ describe('CreateOrderDto', () => {
     const errors = await validate(dto);
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0].property).toBe('employeeId');
+  });
+
+  it('should be invalid without tableId', async () => {
+    (dto.tableId as any) = undefined;
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('tableId');
   });
 
   it('should be invalid with empty order items', async () => {
@@ -54,7 +62,7 @@ describe('CreateOrderDto', () => {
   it('should transform plain objects', () => {
     const plainObject = {
       employeeId: 1,
-      tableId: 'table1',
+      tableId: 'table-1',
       status: OrderStatus.PENDING,
       orderItems: [
         { drinkId: '550e8400-e29b-41d4-a716-446655440000', quantity: 2 },

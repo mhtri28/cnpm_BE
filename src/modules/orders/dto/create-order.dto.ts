@@ -23,9 +23,9 @@ export class CreateOrderDto {
   @IsNotEmpty()
   employeeId: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  tableId?: string;
+  tableId: string;
 
   @IsEnum(OrderStatus)
   @IsOptional()

@@ -17,6 +17,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException } from '@nestjs/common';
 
 describe('OrdersController', () => {
   let controller: OrdersController;
@@ -51,6 +52,7 @@ describe('OrdersController', () => {
     it('should create a new order', async () => {
       const createOrderDto: CreateOrderDto = {
         employeeId: 1,
+        tableId: 'table-1',
         orderItems: [
           {
             drinkId: '1',
@@ -62,6 +64,7 @@ describe('OrdersController', () => {
       const mockOrder: Partial<Order> = {
         id: '1',
         employeeId: 1,
+        tableId: 'table-1',
         status: OrderStatus.PENDING,
       };
 
@@ -72,6 +75,23 @@ describe('OrdersController', () => {
       expect(result).toBe(mockOrder);
       expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
     });
+
+    it('should throw BadRequestException when creating order with invalid tableId', async () => {
+      const createOrderDto: CreateOrderDto = {
+        employeeId: 1,
+        tableId: 'invalid_table_id',
+        orderItems: [{ drinkId: '1', quantity: 2 }],
+      };
+
+      // Mô phỏng dịch vụ ném ra lỗi BadRequestException khi tableId không hợp lệ
+      mockOrdersService.create.mockRejectedValue(
+        new BadRequestException('Table không hợp lệ'),
+      );
+
+      await expect(controller.create(createOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('findAll', () => {
@@ -80,11 +100,13 @@ describe('OrdersController', () => {
         {
           id: '1',
           employeeId: 1,
+          tableId: 'table-1',
           status: OrderStatus.PENDING,
         },
         {
           id: '2',
           employeeId: 2,
+          tableId: 'table-2',
           status: OrderStatus.PAID,
         },
       ];
@@ -103,6 +125,7 @@ describe('OrdersController', () => {
       const mockOrder: Partial<Order> = {
         id: '1',
         employeeId: 1,
+        tableId: 'table-1',
         status: OrderStatus.PENDING,
       };
 
@@ -124,15 +147,13 @@ describe('OrdersController', () => {
       const mockOrder: Partial<Order> = {
         id: '1',
         employeeId: 1,
+        tableId: 'table-1',
         status: OrderStatus.PAID,
       };
 
       mockOrdersService.update.mockResolvedValue(mockOrder);
 
-      const result = await controller.update(
-        '1',
-        updateOrderDto,
-      );
+      const result = await controller.update('1', updateOrderDto);
 
       expect(result).toBe(mockOrder);
       expect(mockOrdersService.update).toHaveBeenCalledWith('1', updateOrderDto);

@@ -11,6 +11,8 @@ import { OrderItem } from './entities/order-item.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DrinksService } from '../drinks/drinks.service';
+import { TablesService } from '../tables/tables.service';
+import { EmployeesService } from '../employees/employees.service';
 
 @Injectable()
 export class OrdersService {
@@ -20,10 +22,29 @@ export class OrdersService {
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
     private readonly drinksService: DrinksService,
+    private readonly tablesService: TablesService,
+    private readonly employeesService: EmployeesService,
     private readonly dataSource: DataSource,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
+    // Kiểm tra xem bàn có tồn tại không
+    const table = await this.tablesService.findOne(createOrderDto.tableId);
+    if (!table) {
+      throw new NotFoundException(
+        `Không tìm thấy bàn với ID: ${createOrderDto.tableId}`,
+      );
+    }
+
+    // Kiểm tra xem nhân viên có tồn tại không
+    try {
+      await this.employeesService.findById(createOrderDto.employeeId);
+    } catch {
+      throw new NotFoundException(
+        `Không tìm thấy nhân viên với ID: ${createOrderDto.employeeId}`,
+      );
+    }
+
     // Bắt đầu transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -34,7 +55,7 @@ export class OrdersService {
       const order = new Order();
       order.id = uuidv4();
       order.employeeId = createOrderDto.employeeId;
-      order.tableId = createOrderDto.tableId as string;
+      order.tableId = createOrderDto.tableId;
       order.status = createOrderDto.status || OrderStatus.PENDING;
 
       // Lưu đơn hàng vào database
@@ -123,6 +144,13 @@ export class OrdersService {
     }
 
     if (updateOrderDto.tableId !== undefined) {
+      // Kiểm tra xem bàn có tồn tại không
+      const table = await this.tablesService.findOne(updateOrderDto.tableId);
+      if (!table) {
+        throw new NotFoundException(
+          `Không tìm thấy bàn với ID: ${updateOrderDto.tableId}`,
+        );
+      }
       order.tableId = updateOrderDto.tableId;
     }
 
