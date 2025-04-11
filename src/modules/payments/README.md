@@ -2,43 +2,73 @@
 
 Module này cung cấp các API để tích hợp thanh toán VNPay vào hệ thống quản lý cửa hàng đồ uống.
 
-## Luồng Hoạt Động Của Quy Trình Thanh Toán
+## Luồng Hoạt Động Của Quy Trình Đặt Món và Thanh Toán
 
-Quy trình thanh toán được thực hiện theo các bước sau:
+Quy trình đặt món và thanh toán được thực hiện theo các bước sau:
 
-1. **Người dùng chọn đồ uống và tạo đơn hàng**
+1. **Người dùng vào quán và quét mã QR trên bàn**
 
-   - Frontend hiển thị danh sách đồ uống và giỏ hàng
-   - Người dùng thêm sản phẩm vào giỏ và tiến hành thanh toán
+   - Mỗi bàn được gắn một mã QR chứa thông tin tableId
+   - Người dùng quét mã QR được chuyển hướng đến trang đặt món với tableId được truyền trong URL
 
-2. **Tạo thanh toán**
+2. **Người dùng chọn món và tạo đơn hàng**
 
-   - Frontend gọi API `POST /payments/create-payment` với thông tin đơn hàng
-   - Backend tạo bản ghi payment và URL thanh toán VNPay
+   - Frontend hiển thị menu đồ uống
+   - Người dùng chọn đồ uống và số lượng
+   - Khi nhấn nút thanh toán, frontend gửi request tạo đơn hàng (order) với trạng thái "pending" và tableId
+
+3. **Tạo thanh toán**
+
+   - Sau khi tạo order, frontend gọi API `POST /payments/create-payment` với thông tin orderId và tổng tiền
+   - Backend tạo bản ghi payment với trạng thái "pending" và tạo URL thanh toán VNPay
    - Backend trả về URL thanh toán cho Frontend
 
-3. **Chuyển hướng người dùng đến trang thanh toán VNPay**
+4. **Chuyển hướng người dùng đến trang thanh toán VNPay**
 
    - Frontend nhận URL thanh toán từ backend
    - Frontend chuyển hướng người dùng đến trang thanh toán VNPay
    - Người dùng hoàn thành thanh toán trên cổng thanh toán VNPay
 
-4. **Xử lý kết quả thanh toán**
+5. **Xử lý kết quả thanh toán**
 
    - Sau khi thanh toán, VNPay chuyển hướng người dùng về URL Return đã được cấu hình
    - Backend xử lý callback từ VNPay và xác thực thông tin thanh toán
-   - Nếu thanh toán thành công, backend cập nhật trạng thái đơn hàng thành "paid"
-   - Backend chuyển hướng người dùng đến trang thành công/thất bại tương ứng
+   - Backend cập nhật trạng thái payment thành "completed" (thành công) hoặc "failed" (thất bại)
+   - Frontend nhận thông tin kết quả thanh toán và hiển thị cho người dùng
 
-5. **Xử lý thông báo IPN (Instant Payment Notification)**
+6. **Cập nhật trạng thái đơn hàng**
+
+   - **Quan trọng**: Frontend cần gửi request thứ hai để cập nhật trạng thái đơn hàng
+   - Nếu thanh toán thành công: Frontend gọi API `PATCH /orders/:id` để cập nhật trạng thái đơn hàng thành "paid"
+   - Nếu thanh toán thất bại: Frontend gọi API `PATCH /orders/:id` để cập nhật trạng thái đơn hàng thành "canceled"
+
+7. **Xử lý thông báo IPN (Instant Payment Notification)**
 
    - VNPay gửi thông báo IPN đến backend
-   - Backend xác thực thông báo IPN và cập nhật trạng thái đơn hàng
+   - Backend xác thực thông báo IPN và cập nhật trạng thái payment (nếu cần)
    - Backend trả về mã xác nhận cho VNPay
+   - Lưu ý: IPN không cập nhật trạng thái order, chỉ cập nhật payment
 
-6. **Hoàn thành đơn hàng**
-   - Các quy trình nghiệp vụ tiếp theo được kích hoạt sau khi đơn hàng đã được thanh toán
-   - Frontend hiển thị thông tin xác nhận đơn hàng cho người dùng
+8. **Hoàn thành đơn hàng**
+   - Khi đơn hàng có trạng thái "paid", nhân viên nhận thông báo và bắt đầu pha chế
+   - Khi hoàn thành món, nhân viên cập nhật trạng thái đơn hàng thành "completed"
+   - Người dùng nhận được thông báo khi đơn hàng hoàn thành
+
+## Sự khác biệt giữa Payment Status và Order Status
+
+Điều quan trọng cần lưu ý là có hai trạng thái riêng biệt cần theo dõi:
+
+1. **Payment Status**: Phản ánh trạng thái thanh toán
+
+   - **pending**: Đang chờ thanh toán
+   - **completed**: Thanh toán thành công
+   - **failed**: Thanh toán thất bại
+
+2. **Order Status**: Phản ánh trạng thái đơn hàng
+   - **pending**: Đơn hàng mới tạo, chưa thanh toán
+   - **paid**: Đơn hàng đã thanh toán, đang xử lý
+   - **completed**: Đơn hàng đã hoàn thành
+   - **canceled**: Đơn hàng đã bị hủy
 
 ## API Endpoints
 
@@ -87,8 +117,8 @@ GET /payments/vnpay-return?vnp_TxnRef=payment-123&vnp_Amount=10000000&vnp_Respon
 
 **Response:**
 
-- Chuyển hướng đến `/payment-success?orderId=order-123` nếu thanh toán thành công
-- Chuyển hướng đến `/payment-failed?message=Lỗi thanh toán` nếu thanh toán thất bại
+- Chuyển hướng đến `/payment-success?orderId=order-123&paymentId=payment-123` nếu thanh toán thành công
+- Chuyển hướng đến `/payment-failed?orderId=order-123&paymentId=payment-123&message=Lỗi thanh toán` nếu thanh toán thất bại
 
 ### 3. Xử Lý IPN Từ VNPay
 
@@ -147,14 +177,82 @@ GET /payments/payment-123
 }
 ```
 
+### 6. Cập Nhật Trạng Thái Đơn Hàng
+
+```
+PATCH /orders/order-123
+```
+
+**Request Body:**
+
+```json
+{
+  "status": "paid"
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": "order-123",
+  "tableId": "table-45",
+  "status": "paid",
+  "items": [...],
+  "totalAmount": 100000,
+  "createdAt": "2023-10-05T08:30:45.000Z",
+  "updatedAt": "2023-10-05T08:31:30.000Z"
+}
+```
+
 ## Hướng Dẫn Cho Frontend
 
-### 1. Khởi Tạo Thanh Toán
-
-Khi người dùng chọn món và nhấn nút thanh toán, frontend cần thực hiện các bước sau:
+### 1. Quy Trình Đặt Món và Thanh Toán
 
 ```javascript
-// Ví dụ sử dụng JavaScript/TypeScript với Axios
+// 1. Xử lý URL từ mã QR
+function handleQRScan() {
+  // URL sau khi quét QR: https://your-app.com/menu?tableId=table-45
+  const urlParams = new URLSearchParams(window.location.search);
+  const tableId = urlParams.get('tableId');
+
+  if (!tableId) {
+    showError('Mã QR không hợp lệ');
+    return;
+  }
+
+  // Lưu tableId vào localStorage để sử dụng sau này
+  localStorage.setItem('tableId', tableId);
+
+  // Hiển thị menu
+  loadMenu();
+}
+
+// 2. Tạo đơn hàng
+async function createOrder(items) {
+  try {
+    const tableId = localStorage.getItem('tableId');
+    const orderData = {
+      tableId,
+      orderItems: items.map((item) => ({
+        drinkId: item.id,
+        quantity: item.quantity,
+      })),
+    };
+
+    const orderResponse = await axios.post('/api/orders', orderData);
+    const orderId = orderResponse.data.id;
+
+    // Sau khi tạo đơn hàng, tiến hành tạo thanh toán
+    return await createPayment(orderId, calculateTotal(items));
+  } catch (error) {
+    console.error('Lỗi khi tạo đơn hàng:', error);
+    showError('Đã xảy ra lỗi khi tạo đơn hàng');
+    throw error;
+  }
+}
+
+// 3. Tạo thanh toán
 async function createPayment(orderId, totalAmount) {
   try {
     const response = await axios.post('/api/payments/create-payment', {
@@ -164,6 +262,9 @@ async function createPayment(orderId, totalAmount) {
     });
 
     if (response.data.success) {
+      // Lưu orderId vào localStorage để sử dụng khi xử lý kết quả thanh toán
+      localStorage.setItem('currentOrderId', orderId);
+
       // Chuyển hướng người dùng đến URL thanh toán VNPay
       window.location.href = response.data.data.paymentUrl;
     } else {
@@ -173,87 +274,115 @@ async function createPayment(orderId, totalAmount) {
   } catch (error) {
     console.error('Lỗi khi tạo thanh toán:', error);
     showError('Đã xảy ra lỗi khi xử lý thanh toán');
+    throw error;
   }
 }
 ```
 
 ### 2. Xử Lý Kết Quả Thanh Toán
 
-Frontend cần chuẩn bị các trang để hiển thị kết quả thanh toán:
-
-1. **Trang Thanh Toán Thành Công (`/payment-success`)**
+#### Trang Thanh Toán Thành Công (`/payment-success`)
 
 ```javascript
-// Ví dụ sử dụng JavaScript/TypeScript với React
-function PaymentSuccessPage() {
-  const [orderDetails, setOrderDetails] = useState(null);
-  const { orderId } = useQueryParams();
+// Xử lý khi thanh toán thành công
+async function handlePaymentSuccess() {
+  // Lấy orderId và paymentId từ URL hoặc localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId =
+    urlParams.get('orderId') || localStorage.getItem('currentOrderId');
+  const paymentId = urlParams.get('paymentId');
 
-  useEffect(() => {
-    if (orderId) {
-      // Lấy thông tin thanh toán từ API
-      axios
-        .get(`/api/payments/order/${orderId}`)
-        .then((response) => {
-          setOrderDetails(response.data);
-        })
-        .catch((error) => {
-          console.error('Lỗi khi lấy thông tin thanh toán:', error);
-        });
+  if (!orderId) {
+    showError('Không tìm thấy thông tin đơn hàng');
+    return;
+  }
+
+  try {
+    // Gửi request cập nhật trạng thái đơn hàng thành "paid"
+    const updateResponse = await axios.patch(`/api/orders/${orderId}`, {
+      status: 'paid',
+    });
+
+    if (updateResponse.data) {
+      // Hiển thị thông tin thành công cho người dùng
+      showSuccessMessage('Thanh toán thành công!');
+      displayOrderDetails(updateResponse.data);
+
+      // Xóa dữ liệu đơn hàng hiện tại trong localStorage
+      localStorage.removeItem('currentOrderId');
     }
-  }, [orderId]);
-
-  return (
-    <div className="payment-success">
-      <h2>Thanh toán thành công!</h2>
-      {orderDetails && (
-        <div className="order-details">
-          <p>Mã đơn hàng: {orderDetails.orderId}</p>
-          <p>Số tiền: {formatCurrency(orderDetails.totalAmount)}</p>
-          <p>Thời gian: {formatDate(orderDetails.updatedAt)}</p>
-        </div>
-      )}
-      <button onClick={() => navigate('/orders')}>Xem đơn hàng của tôi</button>
-    </div>
-  );
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái đơn hàng:', error);
+    showError('Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng');
+  }
 }
 ```
 
-2. **Trang Thanh Toán Thất Bại (`/payment-failed`)**
+#### Trang Thanh Toán Thất Bại (`/payment-failed`)
 
 ```javascript
-// Ví dụ sử dụng JavaScript/TypeScript với React
-function PaymentFailedPage() {
-  const { message } = useQueryParams();
+// Xử lý khi thanh toán thất bại
+async function handlePaymentFailed() {
+  // Lấy orderId và paymentId từ URL hoặc localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId =
+    urlParams.get('orderId') || localStorage.getItem('currentOrderId');
+  const paymentId = urlParams.get('paymentId');
+  const errorMessage =
+    urlParams.get('message') || 'Thanh toán không thành công';
 
-  return (
-    <div className="payment-failed">
-      <h2>Thanh toán không thành công</h2>
-      {message && (
-        <p className="error-message">{decodeURIComponent(message)}</p>
-      )}
-      <button onClick={() => navigate('/cart')}>Quay lại giỏ hàng</button>
-      <button onClick={() => navigate('/')}>Tiếp tục mua sắm</button>
-    </div>
-  );
+  if (!orderId) {
+    showError('Không tìm thấy thông tin đơn hàng');
+    return;
+  }
+
+  try {
+    // Gửi request cập nhật trạng thái đơn hàng thành "canceled"
+    const updateResponse = await axios.patch(`/api/orders/${orderId}`, {
+      status: 'canceled',
+    });
+
+    if (updateResponse.data) {
+      // Hiển thị thông tin thất bại cho người dùng
+      showErrorMessage(errorMessage);
+
+      // Hiển thị các lựa chọn cho người dùng
+      displayPaymentOptions();
+
+      // Xóa dữ liệu đơn hàng hiện tại trong localStorage
+      localStorage.removeItem('currentOrderId');
+    }
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái đơn hàng:', error);
+    showError('Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng');
+  }
 }
 ```
 
 ## Lưu ý Quan Trọng
 
-1. **Bảo mật**
+1. **Xử lý Payment và Order Status**
+
+   - Payment Status và Order Status là hai trạng thái độc lập
+   - Thanh toán thành công không tự động cập nhật Order Status, cần gửi request riêng
+   - Cần đảm bảo xử lý đồng bộ giữa hai trạng thái này để tránh mâu thuẫn dữ liệu
+
+2. **Bảo mật**
 
    - Không lưu trữ thông tin thẻ thanh toán hoặc dữ liệu nhạy cảm
    - Luôn xác thực các thông tin trả về từ VNPay trước khi cập nhật trạng thái thanh toán
+   - Kiểm tra tableId từ QR code để đảm bảo hợp lệ
 
-2. **Xử lý lỗi**
+3. **Xử lý lỗi**
 
    - Luôn kiểm tra và ghi log lỗi
    - Cung cấp thông báo rõ ràng cho người dùng khi có lỗi xảy ra
+   - Đặc biệt cần xử lý trường hợp thanh toán thành công nhưng không cập nhật được Order Status
 
-3. **Kiểm thử**
+4. **Kiểm thử**
    - Sử dụng môi trường sandbox của VNPay để kiểm thử trước khi triển khai
    - Kiểm tra kỹ các trường hợp đặc biệt: thanh toán thất bại, gián đoạn mạng, v.v.
+   - Kiểm tra luồng hoàn chỉnh từ quét QR đến hoàn thành đơn hàng
 
 ## Cấu Hình
 
