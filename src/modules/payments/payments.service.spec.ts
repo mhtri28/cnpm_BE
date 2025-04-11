@@ -99,18 +99,71 @@ describe('PaymentsService', () => {
   });
 
   describe('createPayment', () => {
-    it('should create a payment record', async () => {
+    it('should create a payment record when order exists and has no payment', async () => {
       const orderId = 'order-123';
       const amount = 100000;
+      const order = new Order();
+      order.id = orderId;
+
+      // Mock order exists
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
+      // Mock no existing payment for order
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(null);
 
       const result = await service.createPayment(orderId, amount);
 
+      expect(orderRepository.findOne).toHaveBeenCalledWith({
+        where: { id: orderId },
+      });
+      expect(paymentRepository.findOne).toHaveBeenCalledWith({
+        where: { orderId },
+      });
       expect(paymentRepository.save).toHaveBeenCalled();
       expect(result.id).toBe('test-uuid');
       expect(result.orderId).toBe(orderId);
       expect(result.totalAmount).toBe(amount);
       expect(result.method).toBe(PaymentMethod.VNPAY);
       expect(result.status).toBe(PaymentStatus.PENDING);
+    });
+
+    it('should throw NotFoundException when order does not exist', async () => {
+      const orderId = 'non-existent-order';
+      const amount = 100000;
+
+      // Mock order does not exist
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(service.createPayment(orderId, amount)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(orderRepository.findOne).toHaveBeenCalledWith({
+        where: { id: orderId },
+      });
+    });
+
+    it('should throw Error when order already has a payment', async () => {
+      const orderId = 'order-with-payment';
+      const amount = 100000;
+      const order = new Order();
+      order.id = orderId;
+
+      const existingPayment = new Payment();
+      existingPayment.orderId = orderId;
+
+      // Mock order exists
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
+      // Mock existing payment for order
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(existingPayment);
+
+      await expect(service.createPayment(orderId, amount)).rejects.toThrow(
+        `Đơn hàng với ID ${orderId} đã có thanh toán liên kết`,
+      );
+      expect(orderRepository.findOne).toHaveBeenCalledWith({
+        where: { id: orderId },
+      });
+      expect(paymentRepository.findOne).toHaveBeenCalledWith({
+        where: { orderId },
+      });
     });
   });
 
@@ -134,6 +187,7 @@ describe('PaymentsService', () => {
       const query = {
         vnp_TxnRef: 'test-uuid',
         vnp_Amount: '10000000', // *100
+        vnp_TransactionNo: '12345678'
       };
 
       const payment = new Payment();
@@ -157,7 +211,33 @@ describe('PaymentsService', () => {
       expect(result.payment).toBe(payment);
       expect(result.message).toBe('Thanh toán thành công');
       expect(payment.status).toBe(PaymentStatus.COMPLETED);
+      expect(payment.transactionId).toBe('12345678');
       expect(order.status).toBe('paid');
+    });
+
+    it('should not modify payment if already completed', async () => {
+      const query = {
+        vnp_TxnRef: 'test-uuid',
+        vnp_Amount: '10000000', // *100
+      };
+
+      const payment = new Payment();
+      payment.id = 'test-uuid';
+      payment.orderId = 'order-123';
+      payment.totalAmount = 100000;
+      payment.status = PaymentStatus.COMPLETED;
+      payment.transactionId = 87654321;
+
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(payment);
+
+      const result = await service.handleVnpayReturn(query);
+
+      expect(result.success).toBe(true);
+      expect(result.payment).toBe(payment);
+      expect(result.message).toBe('Thanh toán đã được xử lý trước đó');
+      expect(payment.status).toBe(PaymentStatus.COMPLETED);
+      expect(payment.transactionId).toBe(87654321); // Should not change
+      expect(paymentRepository.save).not.toHaveBeenCalled();
     });
 
     it('should handle payment not found', async () => {
@@ -179,6 +259,7 @@ describe('PaymentsService', () => {
       const query = {
         vnp_TxnRef: 'test-uuid',
         vnp_Amount: '10000000', // *100
+        vnp_TransactionNo: '12345678'
       };
 
       const payment = new Payment();
@@ -201,7 +282,49 @@ describe('PaymentsService', () => {
       expect(result.RspCode).toBe('00');
       expect(result.Message).toBe('Xác nhận thành công');
       expect(payment.status).toBe(PaymentStatus.COMPLETED);
+      expect(payment.transactionId).toBe('12345678');
       expect(order.status).toBe('paid');
+    });
+
+    it('should not process IPN if payment already completed', async () => {
+      const query = {
+        vnp_TxnRef: 'test-uuid',
+        vnp_Amount: '10000000', // *100
+      };
+
+      const payment = new Payment();
+      payment.id = 'test-uuid';
+      payment.orderId = 'order-123';
+      payment.totalAmount = 100000;
+      payment.status = PaymentStatus.COMPLETED;
+
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(payment);
+
+      const result = await service.handleVnpayIpn(query);
+
+      expect(result.RspCode).toBe('00');
+      expect(result.Message).toBe('Giao dịch đã được xử lý');
+      expect(paymentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should return error when payment amount doesn\'t match', async () => {
+      const query = {
+        vnp_TxnRef: 'test-uuid',
+        vnp_Amount: '50000000', // Different amount than stored payment
+      };
+
+      const payment = new Payment();
+      payment.id = 'test-uuid';
+      payment.orderId = 'order-123';
+      payment.totalAmount = 100000; // Different than vnp_Amount/100
+      payment.status = PaymentStatus.PENDING;
+
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(payment);
+
+      const result = await service.handleVnpayIpn(query);
+
+      expect(result.RspCode).toBe('04');
+      expect(result.Message).toBe('Số tiền không hợp lệ');
     });
 
     it('should handle payment not found in IPN', async () => {
@@ -215,6 +338,31 @@ describe('PaymentsService', () => {
 
       expect(result.RspCode).toBe('01');
       expect(result.Message).toBe('Không tìm thấy thông tin thanh toán');
+    });
+
+    it('should handle missing order in IPN', async () => {
+      const query = {
+        vnp_TxnRef: 'test-uuid',
+        vnp_Amount: '10000000', // *100
+      };
+
+      const payment = new Payment();
+      payment.id = 'test-uuid';
+      payment.orderId = 'order-123';
+      payment.totalAmount = 100000;
+      payment.status = PaymentStatus.PENDING;
+
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(payment);
+      jest.spyOn(paymentRepository, 'save').mockResolvedValue(payment);
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.handleVnpayIpn(query);
+
+      expect(result.RspCode).toBe('00');
+      expect(result.Message).toBe('Xác nhận thành công');
+      expect(payment.status).toBe(PaymentStatus.COMPLETED);
+      // Order not updated because it wasn't found
+      expect(orderRepository.save).not.toHaveBeenCalled();
     });
   });
 

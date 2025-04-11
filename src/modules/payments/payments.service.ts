@@ -32,21 +32,31 @@ export class PaymentsService {
   }
 
   async createPayment(orderId: string, amount: number): Promise<Payment> {
+    // Kiểm tra order có tồn tại không
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${orderId}`);
+    }
+
+    // Kiểm tra xem order đã có payment chưa
+    const existingPayment = await this.paymentRepository.findOne({
+      where: { orderId },
+    });
+
+    if (existingPayment) {
+      throw new Error(`Đơn hàng với ID ${orderId} đã có thanh toán liên kết`);
+    }
+
     const payment = new Payment();
     payment.id = uuidv4();
     payment.orderId = orderId;
     payment.totalAmount = amount;
     payment.method = PaymentMethod.VNPAY;
     payment.status = PaymentStatus.PENDING;
-
-    // Cách 1: Để trống transactionId ban đầu
     payment.transactionId = null;
-
-    // Cách 2: Sử dụng localTransactionId và vnpTransactionId
-    /*
-    payment.localTransactionId = Date.now();
-    payment.vnpTransactionId = null;
-    */
 
     return this.paymentRepository.save(payment);
   }
@@ -102,11 +112,25 @@ export class PaymentsService {
         );
       }
 
-      // Cập nhật trạng thái thanh toán
-      payment.status = verifyResult.isSuccess
+      // Chỉ cập nhật trạng thái thanh toán và transactionId
+      const newStatus = verifyResult.isSuccess
         ? PaymentStatus.COMPLETED
         : PaymentStatus.FAILED;
-      payment.transactionId = query.vnp_TransactionNo;
+
+      // Trả về sớm nếu thanh toán đã hoàn thành
+      if (payment.status === PaymentStatus.COMPLETED) {
+        return {
+          success: true,
+          payment,
+          message: 'Thanh toán đã được xử lý trước đó',
+        };
+      }
+
+      // Cập nhật trạng thái thanh toán
+      payment.status = newStatus;
+      if (query.vnp_TransactionNo) {
+        payment.transactionId = query.vnp_TransactionNo;
+      }
       await this.paymentRepository.save(payment);
 
       // Nếu thanh toán thành công, cập nhật trạng thái đơn hàng thành paid
@@ -181,9 +205,11 @@ export class PaymentsService {
         };
       }
 
-      // Cập nhật trạng thái thanh toán thành công
+      // Chỉ cập nhật trạng thái thanh toán và transactionId
       payment.status = PaymentStatus.COMPLETED;
-      payment.transactionId = query.vnp_TransactionNo;
+      if (query.vnp_TransactionNo) {
+        payment.transactionId = query.vnp_TransactionNo;
+      }
       await this.paymentRepository.save(payment);
 
       // Cập nhật trạng thái đơn hàng thành paid
@@ -193,6 +219,10 @@ export class PaymentsService {
       if (order) {
         order.status = 'paid' as any; // Cast to any để tránh lỗi TypeScript
         await this.orderRepository.save(order);
+      } else {
+        this.logger.warn(
+          `Không tìm thấy đơn hàng với ID: ${payment.orderId} khi xử lý IPN`,
+        );
       }
 
       return {

@@ -123,6 +123,74 @@ describe('PaymentsController', () => {
         message: 'Lỗi khi tạo thanh toán: Test error',
       });
     });
+
+    it('should handle non-existent order error', async () => {
+      const createPaymentDto: CreatePaymentDto = {
+        orderId: 'non-existent-order',
+        totalAmount: 100000,
+        method: PaymentMethod.VNPAY,
+      };
+
+      // Simulate NotFoundException for non-existent order
+      const error = new NotFoundException(
+        'Không tìm thấy đơn hàng với ID: non-existent-order',
+      );
+      jest.spyOn(service, 'createPayment').mockRejectedValue(error);
+
+      const req = {
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        connection: { remoteAddress: null },
+        socket: { remoteAddress: null },
+        ip: null,
+      };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await controller.createPayment(createPaymentDto, req as any, res as any);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: expect.stringContaining('Không tìm thấy đơn hàng'),
+      });
+    });
+
+    it('should handle duplicate payment error', async () => {
+      const createPaymentDto: CreatePaymentDto = {
+        orderId: 'order-with-payment',
+        totalAmount: 100000,
+        method: PaymentMethod.VNPAY,
+      };
+
+      // Simulate Error for order already having a payment
+      const error = new Error(
+        'Đơn hàng với ID order-with-payment đã có thanh toán liên kết',
+      );
+      jest.spyOn(service, 'createPayment').mockRejectedValue(error);
+
+      const req = {
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        connection: { remoteAddress: null },
+        socket: { remoteAddress: null },
+        ip: null,
+      };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await controller.createPayment(createPaymentDto, req as any, res as any);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: expect.stringContaining('đã có thanh toán liên kết'),
+      });
+    });
   });
 
   describe('handleVnpayReturn', () => {
