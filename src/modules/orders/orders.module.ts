@@ -7,6 +7,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { DrinksModule } from '../drinks/drinks.module';
 import { TablesModule } from '../tables/tables.module';
 import { EmployeesModule } from '../employees/employees.module';
+import { GuardModule } from '../../guard/guard.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { EmployeesModule } from '../employees/employees.module';
     DrinksModule,
     TablesModule,
     EmployeesModule,
+    GuardModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
