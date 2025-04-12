@@ -35,4 +35,8 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "style: format code with prettier" && git push)
+          git diff --quiet && git diff --staged --quiet || (
+            git add -A &&
+            git commit -m "@mttk2004 style: format code with prettier" &&
+            git push origin "${GITHUB_REF#refs/heads/}"
+          )
