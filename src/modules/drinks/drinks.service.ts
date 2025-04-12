@@ -218,4 +218,14 @@ export class DrinksService {
       throw new NotFoundException(`Không tìm thấy đồ uống với id ${id}`);
     }
   }
+
+  async getRecipeByDrinkId(drinkId: number): Promise<Partial<Recipe>[]> {
+    const drink = await this.findOne(drinkId);
+
+    if (!drink) {
+      throw new NotFoundException(`Không tìm thấy đồ uống với id ${drinkId}`);
+    }
+
+    return drink.recipes;
+  }
 }

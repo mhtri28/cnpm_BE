@@ -58,6 +58,7 @@ const mockDrinksService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
+  getRecipeByDrinkId: jest.fn(),
 };
 
 describe('DrinksController', () => {
@@ -239,6 +240,53 @@ describe('DrinksController', () => {
       const metadata = Reflect.getMetadata('__guards__', controller.remove);
       // Kiểm tra rằng guards được áp dụng đúng cách
       expect(metadata).toBeDefined();
+    });
+  });
+
+  describe('getRecipeByDrinkId', () => {
+    it('should return recipes of a drink', async () => {
+      // Arrange
+      const drinkId = '1';
+      const recipes = [
+        {
+          id: 1,
+          drinkId: 1,
+          ingredientId: 1,
+          quantity: 20,
+          drink: undefined,
+          ingredient: undefined
+        },
+        {
+          id: 2,
+          drinkId: 1,
+          ingredientId: 2,
+          quantity: 30,
+          drink: undefined,
+          ingredient: undefined
+        },
+      ];
+
+      jest.spyOn(service, 'getRecipeByDrinkId').mockResolvedValueOnce(recipes);
+
+      // Act
+      const result = await controller.getRecipes(drinkId);
+
+      // Assert
+      expect(service.getRecipeByDrinkId).toHaveBeenCalledWith(1);
+      expect(result).toBe(recipes);
+    });
+
+    it('should throw an exception if drink not found', async () => {
+      // Arrange
+      jest
+        .spyOn(service, 'getRecipeByDrinkId')
+        .mockRejectedValueOnce(new NotFoundException());
+
+      // Act & Assert
+      await expect(controller.getRecipes('999')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(service.getRecipeByDrinkId).toHaveBeenCalledWith(999);
     });
   });
 });

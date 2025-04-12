@@ -90,4 +90,15 @@ export class DrinksController {
   remove(@Param('id') id: string) {
     return this.drinksService.remove(+id);
   }
+
+  @Get(':id/recipes')
+  @ApiOperation({ summary: 'Lấy danh sách công thức của đồ uống' })
+  @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiOkResponse({
+    description: 'Danh sách công thức của đồ uống',
+    type: [Drink],
+  })
+  getRecipes(@Param('id') id: string) {
+    return this.drinksService.getRecipeByDrinkId(+id);
+  }
 }

@@ -396,4 +396,45 @@ describe('DrinksService', () => {
       expect(drinkRepository.softDelete).toHaveBeenCalledWith(999);
     });
   });
+
+  describe('getRecipeByDrinkId', () => {
+    it('should return recipes for a given drink ID', async () => {
+      // Arrange
+      const drinkId = 1;
+      const drinkWithRecipes = {
+        ...mockDrink,
+        recipes: mockRecipes
+      };
+
+      // Mock the findOne method to return a drink with recipes
+      drinkRepository.findOne!.mockResolvedValue(drinkWithRecipes);
+
+      // Act
+      const result = await service.getRecipeByDrinkId(drinkId);
+
+      // Assert
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        relations: ['recipes', 'recipes.ingredient', 'orderItems'],
+      });
+      expect(result).toEqual(mockRecipes);
+    });
+
+    it('should throw NotFoundException when drink not found', async () => {
+      // Arrange
+      const drinkId = 999;
+
+      // Mock the findOne method to return null (drink not found)
+      drinkRepository.findOne!.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.getRecipeByDrinkId(drinkId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        relations: ['recipes', 'recipes.ingredient', 'orderItems'],
+      });
+    });
+  });
 });
