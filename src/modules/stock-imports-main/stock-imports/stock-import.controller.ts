@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('stock-imports')
+@ApiBearerAuth('JWT-auth')
 @Controller('stock-imports')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
@@ -39,7 +40,7 @@ export class StockImportController {
     description: 'Phiếu nhập kho đã được tạo thành công',
   })
   @Post()
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   create(@Body() createStockImportDto: CreateStockImportDto) {
     return this.stockImportService.create(createStockImportDto);
   }
@@ -50,7 +51,7 @@ export class StockImportController {
     description: 'Trả về danh sách tất cả phiếu nhập kho',
   })
   @Get()
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   findAll() {
     return this.stockImportService.findAll();
   }
@@ -59,7 +60,7 @@ export class StockImportController {
   @ApiResponse({ status: 200, description: 'Trả về thông tin phiếu nhập kho' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Get(':id')
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.stockImportService.findOne(id);
   }

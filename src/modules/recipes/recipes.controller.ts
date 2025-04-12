@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('recipes')
+@ApiBearerAuth('JWT-auth')
 @Controller('recipes')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
@@ -37,7 +38,7 @@ export class RecipesController {
   @ApiOperation({ summary: 'Tạo công thức mới' })
   @ApiResponse({ status: 201, description: 'Công thức đã được tạo thành công' })
   @Post()
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN)
   create(@Body() createRecipeDto: CreateRecipeDto) {
     return this.recipesService.create(createRecipeDto);
   }
@@ -48,7 +49,7 @@ export class RecipesController {
     description: 'Trả về danh sách tất cả công thức',
   })
   @Get()
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN)
   findAll() {
     return this.recipesService.findAll();
   }
@@ -57,10 +58,18 @@ export class RecipesController {
   @ApiResponse({ status: 200, description: 'Trả về thông tin công thức' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy công thức' })
   @Get(':id')
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.recipesService.findById(id);
   }
+
+  @ApiOperation({ summary: 'Tìm công thức đã Drink ID' })
+  @ApiResponse({ status: 200, description: 'Công thức đã tìm thành công' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy công thức' })
+  @Get('drinks/:drinkId')
+    findByDrinkId(@Param('drinkId', ParseIntPipe) drinkId: number) {
+      return this.recipesService.findByDrinkId(drinkId);
+    }
 
   @ApiOperation({ summary: 'Cập nhật thông tin công thức' })
   @ApiResponse({
@@ -69,7 +78,7 @@ export class RecipesController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy công thức' })
   @Put(':id')
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRecipeDto: UpdateRecipeDto,
@@ -81,7 +90,7 @@ export class RecipesController {
   @ApiResponse({ status: 200, description: 'Công thức đã được xóa mềm' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy công thức' })
   @Delete(':id')
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.recipesService.deleteById(id);
   }
@@ -93,4 +102,5 @@ export class RecipesController {
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.recipesService.restore(id);
   }
+ 
 }
