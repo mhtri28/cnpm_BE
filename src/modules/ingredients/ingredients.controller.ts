@@ -26,6 +26,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
+@ApiBearerAuth('JWT-auth')
 @ApiTags('ingredients')
 @Controller('ingredients')
 @UseInterceptors(ClassSerializerInterceptor)
