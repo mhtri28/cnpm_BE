@@ -162,7 +162,7 @@ npm run start:prod
 
 ## API Documentation
 
-API documentation được tạo tự động bằng Swagger UI tại: http://localhost:3000/api
+API documentation được tạo tự động bằng Swagger UI tại: http://localhost:3000/api/docs
 
 # Hệ Thống Xác Thực và Phân Quyền trong Ứng Dụng Quản Lý Cửa Hàng Đồ Uống
 
