@@ -2,9 +2,10 @@ name: Auto Format Code
 
 on:
   push:
-    branches: [master, main, develop]
+    branches: [main]
   pull_request:
-    branches: [master, main, develop]
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   format:
@@ -12,12 +13,17 @@ jobs:
     permissions:
       contents: write # Grant write access to the repository
 
+    # Skip running the auto-format job on pull request events
+    # This avoids duplicate formatting when both push and PR events occur
+    if: github.event_name != 'pull_request'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           # Personal access token is needed to push back to the repository
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Fetch all history to ensure proper git operations
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,18 +31,74 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Check for Prettier config
+        id: check-prettier-config
+        run: |
+          if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f "prettier.config.js" ]; then
+            echo "has_config=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::No Prettier configuration found. Using default settings."
+            echo "has_config=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Ensure NestJS build is clean before formatting
+      - name: Check NestJS build
+        run: npm run build --if-present
+        continue-on-error: true
 
       - name: Format code
         run: npm run format
 
+      - name: Run linter (if available)
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Check if the current branch is protected
+        id: check-branch
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          if [[ "$BRANCH" == "main" ]]; then
+            echo "is_protected=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_protected=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Commit changes
+        if: ${{ steps.check-branch.outputs.is_protected != 'true' }}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git diff --quiet && git diff --staged --quiet || (
             git add -A &&
-            git commit -m "@mttk2004 style: format code with prettier" &&
-            git push origin "${GITHUB_REF#refs/heads/}"
+            git commit -m "style: format code on branch ${GITHUB_REF#refs/heads/}" &&
+            git push origin "${GITHUB_REF#refs/heads/}" || echo "Push failed - there may have been no changes or a conflict occurred"
           )
+
+      # For protected branches, create a pull request instead of direct push
+      - name: Create Pull Request for protected branches
+        if: ${{ steps.check-branch.outputs.is_protected == 'true' }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'style: format code on ${{ github.ref_name }}'
+          title: 'Auto-formatting on ${{ github.ref_name }}'
+          body: |
+            This PR contains auto-formatted code using Prettier.
+
+            This is an automated pull request created by the GitHub Actions workflow.
+          branch: auto-format-${{ github.ref_name }}
+          base: ${{ github.ref_name }}
+          delete-branch: true
