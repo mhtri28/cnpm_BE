@@ -55,7 +55,7 @@ describe('OrdersController', () => {
         tableId: 'table-1',
         orderItems: [
           {
-            drinkId: '1',
+            drinkId: 1,
             quantity: 2,
           },
         ],
@@ -80,7 +80,7 @@ describe('OrdersController', () => {
       const createOrderDto: CreateOrderDto = {
         employeeId: 1,
         tableId: 'invalid_table_id',
-        orderItems: [{ drinkId: '1', quantity: 2 }],
+        orderItems: [{ drinkId: 1, quantity: 2 }],
       };
 
       // Mô phỏng dịch vụ ném ra lỗi BadRequestException khi tableId không hợp lệ

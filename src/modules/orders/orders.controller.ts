@@ -14,7 +14,13 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { RoleGuard } from '../../guard/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { EmployeeRole } from '../employees/entities/employee.entity';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Order } from './entities/order.entity';
 
 @ApiTags('Đơn đặt')
@@ -43,6 +49,7 @@ export class OrdersController {
     description: 'Danh sách tất cả đơn đặt',
     type: [Order],
   })
+  @ApiBearerAuth()
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findAll() {
     return this.ordersService.findAll();
@@ -68,6 +75,7 @@ export class OrdersController {
     description: 'Đơn đặt đã được cập nhật',
     type: Order,
   })
+  @ApiBearerAuth()
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(id, updateOrderDto);
