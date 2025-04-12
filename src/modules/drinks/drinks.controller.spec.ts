@@ -254,7 +254,7 @@ describe('DrinksController', () => {
           ingredientId: 1,
           quantity: 20,
           drink: undefined,
-          ingredient: undefined
+          ingredient: undefined,
         },
         {
           id: 2,
@@ -262,7 +262,7 @@ describe('DrinksController', () => {
           ingredientId: 2,
           quantity: 30,
           drink: undefined,
-          ingredient: undefined
+          ingredient: undefined,
         },
       ];
 

@@ -66,11 +66,13 @@ export class RecipesService {
       where: { drink: { id: drinkId } },
       relations: ['drink', 'ingredient'],
     });
-    
+
     if (!recipes.length) {
-      throw new NotFoundException(`No recipes found for drink with ID ${drinkId}`);
+      throw new NotFoundException(
+        `No recipes found for drink with ID ${drinkId}`,
+      );
     }
-    
+
     return recipes;
   }
 

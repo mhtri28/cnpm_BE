@@ -31,9 +31,9 @@ export class VNPay {
 }
 
 export enum ProductCode {
-  Other = 'other'
+  Other = 'other',
 }
 
 export enum VnpLocale {
-  VN = 'vn'
+  VN = 'vn',
 }
