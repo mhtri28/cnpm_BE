@@ -184,80 +184,96 @@ async function seed() {
 
     // 5. Tạo đồ uống
     console.log('Seeding drinks...');
+    const fakeImageUrl =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg/440px-Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg';
+
     const americano = await drinkRepository.save({
       name: 'Americano',
+      image_url: fakeImageUrl,
       price: 35000,
       soldCount: 0,
     });
 
     const latte = await drinkRepository.save({
       name: 'Cafe Latte',
+      image_url: fakeImageUrl,
       price: 45000,
       soldCount: 0,
     });
 
     const cappuccino = await drinkRepository.save({
       name: 'Cappuccino',
+      image_url: fakeImageUrl,
       price: 48000,
       soldCount: 0,
     });
 
     const espresso = await drinkRepository.save({
       name: 'Espresso',
+      image_url: fakeImageUrl,
       price: 30000,
       soldCount: 0,
     });
 
     const mocha = await drinkRepository.save({
       name: 'Cafe Mocha',
+      image_url: fakeImageUrl,
       price: 50000,
       soldCount: 0,
     });
 
     const blackTea = await drinkRepository.save({
       name: 'Black Tea',
+      image_url: fakeImageUrl,
       price: 32000,
       soldCount: 0,
     });
 
     const greenTeaLatte = await drinkRepository.save({
       name: 'Green Tea Latte',
+      image_url: fakeImageUrl,
       price: 45000,
       soldCount: 0,
     });
 
     const hotChocolate = await drinkRepository.save({
       name: 'Hot Chocolate',
+      image_url: fakeImageUrl,
       price: 42000,
       soldCount: 0,
     });
 
     const vanillaLatte = await drinkRepository.save({
       name: 'Vanilla Latte',
+      image_url: fakeImageUrl,
       price: 50000,
       soldCount: 0,
     });
 
     const caramelMacchiato = await drinkRepository.save({
       name: 'Caramel Macchiato',
+      image_url: fakeImageUrl,
       price: 55000,
       soldCount: 0,
     });
 
     const icedCoffee = await drinkRepository.save({
       name: 'Iced Coffee',
+      image_url: fakeImageUrl,
       price: 38000,
       soldCount: 0,
     });
 
     const lemonTea = await drinkRepository.save({
       name: 'Lemon Tea',
+      image_url: fakeImageUrl,
       price: 35000,
       soldCount: 0,
     });
 
     const mintMojito = await drinkRepository.save({
       name: 'Mint Mojito Coffee',
+      image_url: fakeImageUrl,
       price: 52000,
       soldCount: 0,
     });

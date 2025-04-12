@@ -93,6 +93,7 @@ describe('DrinksController', () => {
       // Arrange
       const createDrinkDto: CreateDrinkDto = {
         name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
         price: 29000,
         recipe: [
           { id: 1, quantity: 15 },
