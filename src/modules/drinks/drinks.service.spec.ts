@@ -403,7 +403,7 @@ describe('DrinksService', () => {
       const drinkId = 1;
       const drinkWithRecipes = {
         ...mockDrink,
-        recipes: mockRecipes
+        recipes: mockRecipes,
       };
 
       // Mock the findOne method to return a drink with recipes

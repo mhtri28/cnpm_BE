@@ -67,9 +67,9 @@ export class RecipesController {
   @ApiResponse({ status: 200, description: 'Công thức đã tìm thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy công thức' })
   @Get('drinks/:drinkId')
-    findByDrinkId(@Param('drinkId', ParseIntPipe) drinkId: number) {
-      return this.recipesService.findByDrinkId(drinkId);
-    }
+  findByDrinkId(@Param('drinkId', ParseIntPipe) drinkId: number) {
+    return this.recipesService.findByDrinkId(drinkId);
+  }
 
   @ApiOperation({ summary: 'Cập nhật thông tin công thức' })
   @ApiResponse({
@@ -102,5 +102,4 @@ export class RecipesController {
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.recipesService.restore(id);
   }
- 
 }
