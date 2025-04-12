@@ -57,7 +57,7 @@ describe('UpdateOrderDto', () => {
     expect(transformed.status).toBe('invalid_status');
   });
 
-  it('should be inivalid with other fields', async () => {
+  it('should be invalid with other fields', async () => {
     dto.status = OrderStatus.PENDING;
     // These fields should not be provided in this DTO
     // employeeId and tableId are not allowed in UpdateOrderDto
