@@ -33,7 +33,7 @@ export class Order {
   id: string;
 
   @ApiProperty({
-    description: 'Reference to the employee who created the order',
+    description: 'Reference to the barista who accepted the order',
     example: 1,
   })
   @Column({ type: 'bigint', unsigned: true })
@@ -47,8 +47,10 @@ export class Order {
   tableId: string;
 
   @ApiProperty({
-    description: 'Total amount for the order',
-    example: 50000.0,
+    description: 'Status of the order',
+    enum: OrderStatus,
+    enumName: 'OrderStatus',
+    example: OrderStatus.PENDING,
   })
   @Column({
     type: 'enum',
@@ -72,7 +74,7 @@ export class Order {
   updatedAt: Date;
 
   @ApiProperty({
-    description: 'Reference to the employee who created the order',
+    description: 'Reference to the barista who accepted the order',
     type: () => Employee,
   })
   @ManyToOne(() => Employee)
