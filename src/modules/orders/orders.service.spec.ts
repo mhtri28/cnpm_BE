@@ -60,7 +60,7 @@ const mockDrink: Partial<Drink> = {
 
 // Tạo mock table
 const mockTable1: Partial<Table> = {
-  id: 'table-1',
+  id: '550e8400-e29b-41d4-a716-446655440000',
   name: 'Bàn 1',
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -69,7 +69,7 @@ const mockTable1: Partial<Table> = {
 };
 
 const mockTable2: Partial<Table> = {
-  id: 'table-2',
+  id: '550e8400-e29b-41d4-a716-446655440001',
   name: 'Bàn 2',
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -158,7 +158,9 @@ describe('OrdersService', () => {
   describe('findAll', () => {
     it('should return an array of orders', async () => {
       const mockOrders = [{ id: '1', status: OrderStatus.PENDING }];
-      (orderRepository.find as jest.Mock).mockResolvedValue(mockOrders as Order[]);
+      (orderRepository.find as jest.Mock).mockResolvedValue(
+        mockOrders as Order[],
+      );
 
       const result = await service.findAll();
       expect(result).toEqual(mockOrders);
@@ -177,7 +179,9 @@ describe('OrdersService', () => {
   describe('findOne', () => {
     it('should return a single order', async () => {
       const mockOrder = { id: '1', status: OrderStatus.PENDING };
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
 
       const result = await service.findOne('1');
       expect(result).toEqual(mockOrder);
@@ -230,8 +234,8 @@ describe('OrdersService', () => {
       // Create order DTO
       const createOrderDto: CreateOrderDto = {
         employeeId: 1,
-        tableId: 'table-1',
-        orderItems: [{ drinkId: '1', quantity: 2 }],
+        tableId: '550e8400-e29b-41d4-a716-446655440000',
+        orderItems: [{ drinkId: 1, quantity: 2 }],
       };
 
       const result = await service.create(createOrderDto);
@@ -240,7 +244,9 @@ describe('OrdersService', () => {
       expect(result).toEqual({ ...mockOrder, orderItems: [mockOrderItem] });
       expect(dataSource.createQueryRunner).toHaveBeenCalled();
       expect(drinksService.findOne).toHaveBeenCalledWith(1);
-      expect(tablesService.findOne).toHaveBeenCalledWith('table-1');
+      expect(tablesService.findOne).toHaveBeenCalledWith(
+        '550e8400-e29b-41d4-a716-446655440000',
+      );
       expect(employeesService.findById).toHaveBeenCalledWith(1);
     });
 
@@ -251,7 +257,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         employeeId: 1,
         tableId: 'invalid-table',
-        orderItems: [{ drinkId: '1', quantity: 2 }],
+        orderItems: [{ drinkId: 1, quantity: 2 }],
       };
 
       await expect(service.create(createOrderDto)).rejects.toThrow(
@@ -271,14 +277,16 @@ describe('OrdersService', () => {
 
       const createOrderDto: CreateOrderDto = {
         employeeId: 999,
-        tableId: 'table-1',
-        orderItems: [{ drinkId: '1', quantity: 2 }],
+        tableId: '550e8400-e29b-41d4-a716-446655440000',
+        orderItems: [{ drinkId: 1, quantity: 2 }],
       };
 
       await expect(service.create(createOrderDto)).rejects.toThrow(
         NotFoundException,
       );
-      expect(tablesService.findOne).toHaveBeenCalledWith('table-1');
+      expect(tablesService.findOne).toHaveBeenCalledWith(
+        '550e8400-e29b-41d4-a716-446655440000',
+      );
       expect(employeesService.findById).toHaveBeenCalledWith(999);
     });
 
@@ -294,103 +302,147 @@ describe('OrdersService', () => {
 
       const createOrderDto: CreateOrderDto = {
         employeeId: 1,
-        tableId: 'table-1',
-        orderItems: [{ drinkId: '1', quantity: 2 }],
+        tableId: '550e8400-e29b-41d4-a716-446655440000',
+        orderItems: [{ drinkId: 1, quantity: 2 }],
       };
 
       await expect(service.create(createOrderDto)).rejects.toThrow(
         NotFoundException,
       );
-      expect(tablesService.findOne).toHaveBeenCalledWith('table-1');
+      expect(tablesService.findOne).toHaveBeenCalledWith(
+        '550e8400-e29b-41d4-a716-446655440000',
+      );
       expect(employeesService.findById).toHaveBeenCalledWith(1);
       expect(drinksService.findOne).toHaveBeenCalledWith(1);
     });
   });
 
   describe('update', () => {
-    it('should update an order', async () => {
+    /**
+     * Only accept updating status.
+     * other fields like employeeId, tableId are not allowed to be updated.
+     */
+
+    it('should update order status', async () => {
       const mockOrder = {
         id: '1',
         status: OrderStatus.PENDING,
-        tableId: 'table1',
       };
 
-      // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
-      (orderRepository.save as jest.Mock).mockResolvedValue({
+      // Mock findOne to return the order - first call includes relations
+      (orderRepository.findOne as jest.Mock).mockResolvedValueOnce(
+        mockOrder as Order,
+      );
+
+      // Mock findOne for the second call at the end which also includes relations
+      (orderRepository.findOne as jest.Mock).mockResolvedValueOnce({
         ...mockOrder,
-        status: OrderStatus.PAID,
+        status: OrderStatus.CANCELED,
       } as Order);
 
-      // Create update DTO
       const updateOrderDto: UpdateOrderDto = {
-        status: OrderStatus.PAID,
+        status: OrderStatus.CANCELED,
       };
 
       // Call service method
-      await service.update('1', updateOrderDto);
+      const result = await service.update('1', updateOrderDto);
 
       // Assertions
-      expect(orderRepository.save).toHaveBeenCalled();
-      expect(orderRepository.findOne).toHaveBeenCalledTimes(2); // Once for initial find, once after update
-    });
+      // First call to findOne should include relations (from the findOne method)
+      expect(orderRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+        relations: [
+          'orderItems',
+          'employee',
+          'table',
+          'payment',
+          'orderItems.drink',
+        ],
+      });
 
-    it('should update order tableId and check if table exists', async () => {
-      const mockOrder = {
-        id: '1',
-        status: OrderStatus.PENDING,
-        tableId: 'table1',
-      };
-
-      // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
-      (orderRepository.save as jest.Mock).mockResolvedValue({
+      // Check that save was called with the updated order
+      expect(orderRepository.save).toHaveBeenCalledWith({
         ...mockOrder,
-        tableId: 'table-2',
-      } as Order);
+        status: OrderStatus.CANCELED,
+      });
 
-      // Mock tìm bàn thành công
-      tablesService.findOne.mockResolvedValue(mockTable2 as Table);
-
-      // Create update DTO
-      const updateOrderDto: UpdateOrderDto = {
-        tableId: 'table-2',
-      };
-
-      // Call service method
-      await service.update('1', updateOrderDto);
-
-      // Assertions
-      expect(tablesService.findOne).toHaveBeenCalledWith('table-2');
-      expect(orderRepository.save).toHaveBeenCalled();
+      // Check the result matches what we expect
+      expect(result).toEqual({ ...mockOrder, status: OrderStatus.CANCELED });
     });
 
-    it('should throw NotFoundException if update tableId is invalid', async () => {
-      const mockOrder = {
-        id: '1',
-        status: OrderStatus.PENDING,
-        tableId: 'table1',
-      };
+    it('should throw NotFoundException if order not found', async () => {
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(null);
 
-      // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
-
-      // Mock tìm bàn thất bại
-      tablesService.findOne.mockResolvedValue(null);
-
-      // Create update DTO
       const updateOrderDto: UpdateOrderDto = {
-        tableId: 'invalid-table',
+        status: OrderStatus.CANCELED,
       };
 
-      // Call service method and expect error
       await expect(service.update('1', updateOrderDto)).rejects.toThrow(
         NotFoundException,
       );
+    });
+    it('should throw BadRequestException if status is not valid', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.PENDING,
+      };
 
-      // Assertions
-      expect(tablesService.findOne).toHaveBeenCalledWith('invalid-table');
-      expect(orderRepository.save).not.toHaveBeenCalled();
+      // Mock findOne to return the order
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
+
+      const updateOrderDto: UpdateOrderDto = {
+        status: 'invalid_status' as OrderStatus,
+      };
+
+      // Call service method
+      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+    it('should throw BadRequestException if order status is COMPLETED or CANCELED', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.COMPLETED,
+      };
+
+      // Mock findOne to return the order
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
+
+      const updateOrderDto: UpdateOrderDto = {
+        status: OrderStatus.CANCELED,
+      };
+
+      // Call service method
+      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('shoule throw BadRequestException if include other fields', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.PENDING,
+      };
+
+      // Mock findOne to return the order
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
+
+      const updateOrderDto: UpdateOrderDto = {
+        employeeId: 1,
+        tableId: '550e8400-e29b-41d4-a716-446655440000',
+        status: OrderStatus.CANCELED,
+      };
+
+      // Call service method
+      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -402,7 +454,9 @@ describe('OrdersService', () => {
       };
 
       // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
 
       // Call service method
       await service.remove('1');
@@ -420,7 +474,9 @@ describe('OrdersService', () => {
       };
 
       // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(mockOrder as Order);
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
 
       // Assertions
       await expect(service.remove('1')).rejects.toThrow(BadRequestException);

@@ -6,6 +6,7 @@ import {
   ArrayMinSize,
   IsNumber,
   IsUUID,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { OrderStatus } from '../entities/order.entity';
@@ -14,17 +15,19 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateOrderItemDto {
   @ApiProperty({
     description: 'ID của đồ uống',
-    example: '1',
+    example: 1,
   })
   @IsNotEmpty()
   @IsNumber()
-  drinkId: string;
+  drinkId: number;
 
   @ApiProperty({
     description: 'Số lượng đồ uống',
     example: 2,
   })
   @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
   quantity: number;
 }
 

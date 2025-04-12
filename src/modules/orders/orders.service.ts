@@ -64,9 +64,7 @@ export class OrdersService {
       // Xử lý các mục đơn hàng
       const orderItems = await Promise.all(
         createOrderDto.orderItems.map(async (item) => {
-          const drink = await this.drinksService.findOne(
-            parseInt(item.drinkId, 10),
-          );
+          const drink = await this.drinksService.findOne(item.drinkId);
           if (!drink) {
             throw new NotFoundException(
               `Không tìm thấy đồ uống với ID: ${item.drinkId}`,
@@ -138,25 +136,47 @@ export class OrdersService {
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
     const order = await this.findOne(id);
 
-    // Cập nhật thông tin đơn hàng
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    // Prevent updates to completed or canceled orders
+    if (
+      order.status === OrderStatus.COMPLETED ||
+      order.status === OrderStatus.CANCELED
+    ) {
+      throw new BadRequestException(
+        'Không thể cập nhật đơn hàng đã hoàn thành hoặc đã hủy.',
+      );
+    }
+
+    // Validate status exists in enum
+    if (
+      updateOrderDto.status &&
+      !Object.values(OrderStatus).includes(updateOrderDto.status)
+    ) {
+      throw new BadRequestException(
+        `Trạng thái đơn hàng không hợp lệ: ${updateOrderDto.status}`,
+      );
+    }
+
+    // Reject updates with fields other than status
+    if (
+      updateOrderDto.employeeId ||
+      updateOrderDto.tableId ||
+      updateOrderDto.orderItems
+    ) {
+      throw new BadRequestException(
+        'Chỉ cho phép cập nhật trạng thái đơn hàng. Không thể cập nhật các mục đơn hàng, nhân viên hoặc bàn.',
+      );
+    }
+
+    // Update and save the order
     if (updateOrderDto.status) {
       order.status = updateOrderDto.status;
     }
 
-    if (updateOrderDto.tableId !== undefined) {
-      // Kiểm tra xem bàn có tồn tại không
-      const table = await this.tablesService.findOne(updateOrderDto.tableId);
-      if (!table) {
-        throw new NotFoundException(
-          `Không tìm thấy bàn với ID: ${updateOrderDto.tableId}`,
-        );
-      }
-      order.tableId = updateOrderDto.tableId;
-    }
-
-    // Lưu đơn hàng đã cập nhật
     await this.orderRepository.save(order);
-
     return this.findOne(id);
   }
 
