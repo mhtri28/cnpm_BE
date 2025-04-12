@@ -52,7 +52,7 @@ describe('PaymentsService', () => {
         {
           provide: getRepositoryToken(Payment),
           useValue: {
-            save: jest.fn().mockImplementation(payment => ({
+            save: jest.fn().mockImplementation((payment) => ({
               ...payment,
               id: payment.id || 'test-uuid', // Đảm bảo id được gán
             })),
@@ -153,7 +153,9 @@ describe('PaymentsService', () => {
       // Mock order exists
       jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
       // Mock existing payment for order
-      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(existingPayment);
+      jest
+        .spyOn(paymentRepository, 'findOne')
+        .mockResolvedValue(existingPayment);
 
       await expect(service.createPayment(orderId, amount)).rejects.toThrow(
         `Đơn hàng với ID ${orderId} đã có thanh toán liên kết`,
@@ -187,7 +189,7 @@ describe('PaymentsService', () => {
       const query = {
         vnp_TxnRef: 'test-uuid',
         vnp_Amount: '10000000', // *100
-        vnp_TransactionNo: '12345678'
+        vnp_TransactionNo: '12345678',
       };
 
       const payment = new Payment();
@@ -259,7 +261,7 @@ describe('PaymentsService', () => {
       const query = {
         vnp_TxnRef: 'test-uuid',
         vnp_Amount: '10000000', // *100
-        vnp_TransactionNo: '12345678'
+        vnp_TransactionNo: '12345678',
       };
 
       const payment = new Payment();
@@ -307,7 +309,7 @@ describe('PaymentsService', () => {
       expect(paymentRepository.save).not.toHaveBeenCalled();
     });
 
-    it('should return error when payment amount doesn\'t match', async () => {
+    it("should return error when payment amount doesn't match", async () => {
       const query = {
         vnp_TxnRef: 'test-uuid',
         vnp_Amount: '50000000', // Different amount than stored payment

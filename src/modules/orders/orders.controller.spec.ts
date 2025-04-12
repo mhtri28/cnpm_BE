@@ -156,7 +156,10 @@ describe('OrdersController', () => {
       const result = await controller.update('1', updateOrderDto);
 
       expect(result).toBe(mockOrder);
-      expect(mockOrdersService.update).toHaveBeenCalledWith('1', updateOrderDto);
+      expect(mockOrdersService.update).toHaveBeenCalledWith(
+        '1',
+        updateOrderDto,
+      );
     });
   });
 });
