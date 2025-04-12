@@ -1,10 +1,19 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateDrinkDto, RecipeItemDto } from './create-drink.dto';
-import { IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class UpdateDrinkDto extends PartialType(CreateDrinkDto) {
+  @ApiProperty({
+    description: 'Tên của đồ uống (tùy chọn)',
+    example: 'Cà phê sữa đá',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
   @ApiProperty({
     description: 'Công thức của đồ uống (tùy chọn)',
     type: [RecipeItemDto],

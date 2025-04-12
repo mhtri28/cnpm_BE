@@ -9,10 +9,8 @@ describe('CreateOrderDto', () => {
   beforeEach(() => {
     dto = new CreateOrderDto();
     dto.employeeId = 1;
-    dto.tableId = 'table-1';
-    dto.orderItems = [
-      { drinkId: '550e8400-e29b-41d4-a716-446655440000', quantity: 2 },
-    ];
+    dto.tableId = '550e8400-e29b-41d4-a716-446655440000';
+    dto.orderItems = [{ drinkId: 1, quantity: 2 }];
   });
 
   it('should be valid with all required fields', async () => {
@@ -62,11 +60,9 @@ describe('CreateOrderDto', () => {
   it('should transform plain objects', () => {
     const plainObject = {
       employeeId: 1,
-      tableId: 'table-1',
+      tableId: '550e8400-e29b-41d4-a716-446655440000',
       status: OrderStatus.PENDING,
-      orderItems: [
-        { drinkId: '550e8400-e29b-41d4-a716-446655440000', quantity: 2 },
-      ],
+      orderItems: [{ drinkId: 1, quantity: 2 }],
     };
 
     const dtoInstance = plainToInstance(CreateOrderDto, plainObject);
@@ -80,7 +76,7 @@ describe('CreateOrderItemDto', () => {
 
   beforeEach(() => {
     dto = new CreateOrderItemDto();
-    dto.drinkId = '550e8400-e29b-41d4-a716-446655440000';
+    dto.drinkId = 1;
     dto.quantity = 2;
   });
 
@@ -97,8 +93,8 @@ describe('CreateOrderItemDto', () => {
     expect(errors[0].property).toBe('drinkId');
   });
 
-  it('should be invalid with non-UUID drinkId', async () => {
-    dto.drinkId = 'invalid-uuid';
+  it('should be invalid with non-numeric drinkId', async () => {
+    (dto.drinkId as any) = 'invalid_id';
 
     const errors = await validate(dto);
     expect(errors.length).toBeGreaterThan(0);
@@ -107,6 +103,22 @@ describe('CreateOrderItemDto', () => {
 
   it('should be invalid without quantity', async () => {
     (dto.quantity as any) = undefined;
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('quantity');
+  });
+
+  it('should be invalid with non-numeric quantity', async () => {
+    (dto.quantity as any) = 'invalid_quantity';
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('quantity');
+  });
+
+  it('should be invalid with negative quantity', async () => {
+    dto.quantity = -1;
 
     const errors = await validate(dto);
     expect(errors.length).toBeGreaterThan(0);

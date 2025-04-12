@@ -10,17 +10,23 @@ describe('UpdateOrderDto', () => {
     dto = new UpdateOrderDto();
   });
 
-  it('should be valid with valid fields', async () => {
-    dto.status = OrderStatus.PAID;
-    dto.tableId = 'table1';
+  /**
+   * Order can be updated with only status
+   */
+
+  it('should be valid with only status', async () => {
+    dto.status = OrderStatus.PENDING;
 
     const errors = await validate(dto);
     expect(errors.length).toBe(0);
   });
 
-  it('should be valid with empty DTO (all fields optional)', async () => {
+  it('should be invalid with empty status', async () => {
+    (dto.status as any) = undefined;
+
     const errors = await validate(dto);
-    expect(errors.length).toBe(0);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('status');
   });
 
   it('should be invalid with invalid status', async () => {
@@ -32,30 +38,40 @@ describe('UpdateOrderDto', () => {
   });
 
   it('should transform plain objects', () => {
-    const plainObject = {
-      status: OrderStatus.PAID,
-      tableId: 'table1',
+    const plain = {
+      status: OrderStatus.PENDING,
     };
 
-    const dtoInstance = plainToInstance(UpdateOrderDto, plainObject);
-    expect(dtoInstance).toBeInstanceOf(UpdateOrderDto);
-    expect(dtoInstance.status).toBe(OrderStatus.PAID);
-    expect(dtoInstance.tableId).toBe('table1');
+    const transformed = plainToInstance(UpdateOrderDto, plain);
+    expect(transformed).toBeInstanceOf(UpdateOrderDto);
+    expect(transformed.status).toBe(OrderStatus.PENDING);
   });
 
-  it('should accept partial updates', async () => {
-    // Only update status
-    let partialDto = new UpdateOrderDto();
-    partialDto.status = OrderStatus.PAID;
+  it('should transform plain objects with invalid status', () => {
+    const plain = {
+      status: 'invalid_status',
+    };
 
-    let errors = await validate(partialDto);
-    expect(errors.length).toBe(0);
+    const transformed = plainToInstance(UpdateOrderDto, plain);
+    expect(transformed).toBeInstanceOf(UpdateOrderDto);
+    expect(transformed.status).toBe('invalid_status');
+  });
 
-    // Only update tableId
-    partialDto = new UpdateOrderDto();
-    partialDto.tableId = 'table2';
+  it('should be inivalid with other fields', async () => {
+    dto.status = OrderStatus.PENDING;
+    // These fields should not be provided in this DTO
+    // employeeId and tableId are not allowed in UpdateOrderDto
+    // but we are providing them to check if the validation works
+    dto.employeeId = 1;
+    dto.tableId = '550e8400-e29b-41d4-a716-446655440000';
 
-    errors = await validate(partialDto);
-    expect(errors.length).toBe(0);
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+
+    // Check if the errors are for employeeId and tableId, no need to order it
+    const errorFields = errors.map((error) => error.property);
+    expect(errorFields).toContain('employeeId');
+    expect(errorFields).toContain('tableId');
+    expect(errorFields.length).toBe(2);
   });
 });
