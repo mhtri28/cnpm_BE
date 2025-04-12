@@ -114,7 +114,7 @@ npm run db:fresh
 
 - Đơn hàng được tạo bởi Khách hàng
 - Barista phụ trách pha chế
-- Trạng thái đơn hàng: PENDING -> PREPARING -> READY -> DELIVERED
+- Trạng thái đơn hàng: PENDING -> PAID -> PREPARING -> COMPLETED -> CANCELED
 - Mỗi đơn hàng có thể có nhiều món
 - Tính toán tổng tiền tự động
 
