@@ -18,7 +18,15 @@ import { EmployeeRole } from '../../employees/entities/employee.entity';
 import { AuthGuard } from '../../../guard/auth.guard';
 import { Roles } from '../../../decorators/role.decorator';
 import { UpdateStockImportItemDto } from '../dto/update-stock-import-item.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
+@ApiTags('stock-import-items')
+@ApiBearerAuth('JWT-auth')  
 @Controller('stock-import-item')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
@@ -28,19 +36,19 @@ export class StockImportItemController {
   ) {}
 
   @Post()
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   create(@Body() createStockImportItemDto: CreateStockImportItemDto) {
     return this.stockImportItemService.create(createStockImportItemDto);
   }
 
   @Get()
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   findAll() {
     return this.stockImportItemService.findAll();
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.stockImportItemService.findOne(id);
   }

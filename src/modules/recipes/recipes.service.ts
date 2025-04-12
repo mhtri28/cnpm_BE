@@ -61,6 +61,19 @@ export class RecipesService {
     return recipe;
   }
 
+  async findByDrinkId(drinkId: number) {
+    const recipes = await this.recipeRepo.find({
+      where: { drink: { id: drinkId } },
+      relations: ['drink', 'ingredient'],
+    });
+    
+    if (!recipes.length) {
+      throw new NotFoundException(`No recipes found for drink with ID ${drinkId}`);
+    }
+    
+    return recipes;
+  }
+
   async updateById(id: number, updateRecipeDto: UpdateRecipeDto) {
     const { drinkId, ingredientId, quantity } = updateRecipeDto;
 
