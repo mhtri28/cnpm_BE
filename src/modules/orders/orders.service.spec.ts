@@ -422,7 +422,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('shoule throw BadRequestException if include other fields', async () => {
+    it('should throw BadRequestException if include other fields', async () => {
       const mockOrder = {
         id: '1',
         status: OrderStatus.PENDING,

@@ -39,6 +39,14 @@ export class CreateDrinkDto {
   name: string;
 
   @ApiProperty({
+    description: 'Ảnh của đồ uống',
+    example: 'https://example.com/images/drink.jpg',
+  })
+  @IsNotEmpty()
+  @IsString()
+  image_url: string;
+
+  @ApiProperty({
     description: 'Giá của đồ uống',
     example: 29000,
   })

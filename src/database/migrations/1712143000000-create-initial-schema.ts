@@ -47,6 +47,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS drinks (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
+        image_url VARCHAR(255) NOT NULL,
         price DECIMAL(8, 2) NOT NULL,
         soldCount BIGINT NOT NULL DEFAULT 0,
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

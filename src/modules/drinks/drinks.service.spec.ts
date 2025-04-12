@@ -12,6 +12,7 @@ import { Ingredient } from '../ingredients/entities/ingredient.entity';
 const mockDrink = {
   id: 1,
   name: 'Cà phê sữa đá',
+  image_url: 'https://example.com/images/drink.jpg',
   price: 29000,
   soldCount: 0,
   createdAt: new Date(),
@@ -66,6 +67,7 @@ const mockDrinksList = [
   {
     id: 2,
     name: 'Trà đào cam sả',
+    image_url: 'https://example.com/images/drink2.jpg',
     price: 35000,
     soldCount: 10,
     createdAt: new Date(),
@@ -163,6 +165,7 @@ describe('DrinksService', () => {
       // Arrange
       const createDrinkDto: CreateDrinkDto = {
         name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
         price: 29000,
         recipe: [
           { id: 1, quantity: 15 },
@@ -214,6 +217,7 @@ describe('DrinksService', () => {
       // Assert
       expect(drinkRepository.create).toHaveBeenCalledWith({
         name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
         price: 29000,
       });
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
@@ -226,6 +230,7 @@ describe('DrinksService', () => {
       // Arrange
       const createDrinkDto: CreateDrinkDto = {
         name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
         price: 29000,
         recipe: [
           { id: 999, quantity: 15 }, // ID không tồn tại
@@ -389,6 +394,47 @@ describe('DrinksService', () => {
       // Act & Assert
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);
       expect(drinkRepository.softDelete).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('getRecipeByDrinkId', () => {
+    it('should return recipes for a given drink ID', async () => {
+      // Arrange
+      const drinkId = 1;
+      const drinkWithRecipes = {
+        ...mockDrink,
+        recipes: mockRecipes
+      };
+
+      // Mock the findOne method to return a drink with recipes
+      drinkRepository.findOne!.mockResolvedValue(drinkWithRecipes);
+
+      // Act
+      const result = await service.getRecipeByDrinkId(drinkId);
+
+      // Assert
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        relations: ['recipes', 'recipes.ingredient', 'orderItems'],
+      });
+      expect(result).toEqual(mockRecipes);
+    });
+
+    it('should throw NotFoundException when drink not found', async () => {
+      // Arrange
+      const drinkId = 999;
+
+      // Mock the findOne method to return null (drink not found)
+      drinkRepository.findOne!.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.getRecipeByDrinkId(drinkId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        relations: ['recipes', 'recipes.ingredient', 'orderItems'],
+      });
     });
   });
 });

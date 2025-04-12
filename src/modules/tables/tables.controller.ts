@@ -22,7 +22,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-@ApiTags('tables')
+@ApiTags('Bàn')
 @Controller('tables')
 @UseGuards(AuthGuard, RoleGuard)
 @ApiBearerAuth()
@@ -33,6 +33,7 @@ export class TablesController {
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Tạo mới bàn' })
   @ApiResponse({ status: 201, description: 'Tạo mới thành công' })
+  @ApiBearerAuth()
   create(@Body() createTableDto: CreateTableDto) {
     return this.tablesService.create(createTableDto);
   }
@@ -41,6 +42,7 @@ export class TablesController {
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   @ApiOperation({ summary: 'Lấy danh sách tất cả các bàn' })
   @ApiResponse({ status: 200, description: 'Lấy danh sách thành công' })
+  @ApiBearerAuth()
   findAll() {
     return this.tablesService.findAll();
   }
@@ -49,6 +51,7 @@ export class TablesController {
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   @ApiOperation({ summary: 'Lấy thông tin chi tiết của một bàn' })
   @ApiResponse({ status: 200, description: 'Lấy thông tin thành công' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy bàn' })
   findOne(@Param('id') id: string) {
     return this.tablesService.findOne(id);
   }
@@ -57,6 +60,7 @@ export class TablesController {
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Cập nhật thông tin bàn' })
   @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
+  @ApiBearerAuth()
   update(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
     return this.tablesService.update(id, updateTableDto);
   }
@@ -65,6 +69,7 @@ export class TablesController {
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Xóa một bàn' })
   @ApiResponse({ status: 200, description: 'Xóa thành công' })
+  @ApiBearerAuth()
   remove(@Param('id') id: string) {
     return this.tablesService.remove(id);
   }
