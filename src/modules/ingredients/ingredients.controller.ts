@@ -24,56 +24,61 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
+import { Ingredient } from './entities/ingredient.entity';
 
-@ApiBearerAuth('JWT-auth')
 @ApiTags('ingredients')
 @Controller('ingredients')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')  // Update to match token name
 export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
-  @ApiOperation({ summary: 'Tạo nguyên liệu mới' })
-  @ApiResponse({
-    status: 201,
-    description: 'Nguyên liệu đã được tạo thành công',
-  })
   @Post()
   @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Tạo nguyên liệu mới' })
+  @ApiCreatedResponse({
+    type: Ingredient,
+    description: 'Nguyên liệu đã được tạo thành công',
+  })
   create(@Body() createIngredientDto: CreateIngredientDto) {
     return this.ingredientsService.create(createIngredientDto);
   }
 
-  @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
-  @ApiResponse({
-    status: 200,
-    description: 'Trả về danh sách tất cả nguyên liệu',
-  })
   @Get()
   @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
+  @ApiOkResponse({
+    type: [Ingredient],
+    description: 'Trả về danh sách tất cả nguyên liệu',
+  })
   findAll() {
     return this.ingredientsService.findAll();
   }
 
-  @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
-  @ApiResponse({ status: 200, description: 'Trả về thông tin nguyên liệu' })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
   @Get(':id')
   @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
+  @ApiOkResponse({
+    type: Ingredient,
+    description: 'Trả về thông tin nguyên liệu',
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.ingredientsService.findById(id);
   }
 
+  @Put(':id')
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Cập nhật thông tin nguyên liệu' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: Ingredient,
     description: 'Thông tin nguyên liệu đã được cập nhật',
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
-  @Put(':id')
-  @Roles(EmployeeRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateIngredientDto: UpdateIngredientDto,
@@ -81,19 +86,23 @@ export class IngredientsController {
     return this.ingredientsService.updateById(id, updateIngredientDto);
   }
 
-  @ApiOperation({ summary: 'Xóa nguyên liệu' })
-  @ApiResponse({ status: 200, description: 'Nguyên liệu đã được xóa mềm' })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
   @Delete(':id')
   @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Xóa nguyên liệu' })
+  @ApiOkResponse({ description: 'Nguyên liệu đã được xóa mềm' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.ingredientsService.deleteById(id);
   }
 
+  @Patch(':id/restore')
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Khôi phục nguyên liệu đã xóa' })
-  @ApiResponse({ status: 200, description: 'Nguyên liệu đã được khôi phục' })
+  @ApiOkResponse({
+    type: Ingredient,
+    description: 'Nguyên liệu đã được khôi phục',
+  })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nguyên liệu' })
-  @Patch(':id')
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.ingredientsService.restore(id);
   }

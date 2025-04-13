@@ -20,59 +20,66 @@ import { EmployeeRole } from '../employees/entities/employee.entity';
 import { Roles } from '../../decorators/role.decorator';
 import { AuthGuard } from '../../guard/auth.guard';
 import {
-  ApiTags,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiTags,
 } from '@nestjs/swagger';
+import { Supplier } from './entities/supplier.entity';
 
 @ApiTags('suppliers')
-@ApiBearerAuth('JWT-auth')
 @Controller('suppliers')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@Roles(EmployeeRole.INVENTORY_MANAGER)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')  // Keep only one ApiBearerAuth with the correct token name
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
+  @Post()
+  @Roles(EmployeeRole.ADMIN)  // Remove duplicate UseGuards since it's already in the controller level
   @ApiOperation({ summary: 'Tạo nhà cung cấp mới' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
+    type: Supplier,
     description: 'Nhà cung cấp đã được tạo thành công',
   })
-  @Post()
   create(@Body() createSupplierDto: CreateSupplierDto) {
     return this.supplierService.create(createSupplierDto);
   }
 
+  @Get()
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Lấy tất cả nhà cung cấp' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: [Supplier],
     description: 'Trả về danh sách tất cả nhà cung cấp',
   })
-  @Get()
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
   findAll() {
     return this.supplierService.findAll();
   }
 
-  @ApiOperation({ summary: 'Lấy thông tin nhà cung cấp theo ID' })
-  @ApiResponse({ status: 200, description: 'Trả về thông tin nhà cung cấp' })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
   @Get(':id')
+  @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Lấy thông tin nhà cung cấp theo ID' })
+  @ApiOkResponse({
+    type: Supplier,
+    description: 'Trả về thông tin nhà cung cấp',
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.findById(id);
   }
 
+  @Put(':id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Cập nhật thông tin nhà cung cấp' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: Supplier,
     description: 'Thông tin nhà cung cấp đã được cập nhật',
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
-  @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateSupplierDto: UpdateSupplierDto,
@@ -80,18 +87,25 @@ export class SupplierController {
     return this.supplierService.updateById(id, updateSupplierDto);
   }
 
-  @ApiOperation({ summary: 'Xóa nhà cung cấp' })
-  @ApiResponse({ status: 200, description: 'Nhà cung cấp đã được xóa mềm' })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
   @Delete(':id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Xóa nhà cung cấp' })
+  @ApiOkResponse({ description: 'Nhà cung cấp đã được xóa mềm' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.deleteById(id);
   }
 
+  @Patch(':id/restore')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Khôi phục nhà cung cấp đã xóa' })
-  @ApiResponse({ status: 200, description: 'Nhà cung cấp đã được khôi phục' })
+  @ApiOkResponse({
+    type: Supplier,
+    description: 'Nhà cung cấp đã được khôi phục',
+  })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
-  @Patch(':id')
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.restore(id);
   }

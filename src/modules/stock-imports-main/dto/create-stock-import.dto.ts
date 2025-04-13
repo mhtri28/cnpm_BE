@@ -1,24 +1,17 @@
-import { IsNumber, IsOptional, IsDate } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateStockImportDto {
-  @IsNumber()
+  @ApiProperty({
+    description: 'ID của nhân viên tạo phiếu nhập kho',
+    example: '1'
+  })
   employeeId: number;
 
-  @IsNumber()
+  @ApiProperty({
+    description: 'ID của nhà cung cấp',
+    example: '1'
+  })
   supplierId: number;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  totalCost: number;
-
-  @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  createdAt?: Date;
-
-  @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  updatedAt?: Date;
+  
 }

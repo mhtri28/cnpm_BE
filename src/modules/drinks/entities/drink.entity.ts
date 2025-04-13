@@ -31,6 +31,7 @@ export class Drink {
     description: 'Ảnh của đồ uống',
     example: 'https://example.com/images/drink.jpg',
   })
+  @Column()
   image_url: string;
 
   @ApiProperty({

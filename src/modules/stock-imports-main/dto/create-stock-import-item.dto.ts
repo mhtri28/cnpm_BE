@@ -1,31 +1,29 @@
-import { IsNumber, IsNotEmpty, Min } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateStockImportItemDto {
-  @IsNumber()
-  @IsNotEmpty()
-  @Transform(({ value }) => Number(value))
+  @ApiProperty({
+    description: 'ID của nguyên liệu',
+    example: 1
+  })
   ingredientId: number;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Transform(({ value }) => Number(value))
-  stockImportId: number;
+  @ApiProperty({
+    description: 'ID của phiếu nhập kho',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  stockImportId: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(0) // Đảm bảo giá không âm
-  @Transform(({ value }) => Number(value))
-  unitPrice: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(1) // Đảm bảo số lượng ít nhất là 1
-  @Transform(({ value }) => Number(value))
+  @ApiProperty({
+    description: 'Số lượng nhập',
+    example: 100
+  })
   quantity: number;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(0) // Đảm bảo tổng giá trị không âm
-  @Transform(({ value }) => Number(value))
-  subTotal: number;
+  @ApiProperty({
+    description: 'Đơn giá nhập',
+    example: 50000.00,
+    type: 'number',
+    format: 'decimal'
+  })
+  unitPrice: number;
 }

@@ -1,20 +1,27 @@
-import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRecipeDto {
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @ApiProperty({
+    description: 'ID của đồ uống',
+    example: '1'
+  })
   drinkId: number;
 
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @ApiProperty({
+    description: 'ID của nguyên liệu',
+    example: 1
+  })
   ingredientId: number;
 
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @Min(1)
+  @ApiProperty({
+    description: 'Số lượng nguyên liệu cần dùng',
+    example: 20
+  })
   quantity: number;
+
+  @ApiProperty({
+    description: 'Đơn vị tính',
+    example: 'gram'
+  })
+  unit: string;
 }

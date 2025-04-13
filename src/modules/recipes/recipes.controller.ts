@@ -27,7 +27,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('recipes')
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-auth')  // Remove duplicate ApiBearerAuth
 @Controller('recipes')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)

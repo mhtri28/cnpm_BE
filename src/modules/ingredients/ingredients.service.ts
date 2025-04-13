@@ -15,7 +15,7 @@ export class IngredientsService {
   ) {}
 
   async create(createIngredientDto: CreateIngredientDto) {
-    const { name, availableCount, supplierId } = createIngredientDto;
+    const { name, availableCount, supplierId, unit } = createIngredientDto;
 
     const supplier = await this.supplierRepo.findOne({
       where: { id: supplierId },
@@ -27,6 +27,7 @@ export class IngredientsService {
     const ingredient = this.ingredientRepo.create({
       name,
       availableCount,
+      unit,
       supplier,
     });
 
@@ -51,7 +52,7 @@ export class IngredientsService {
   }
 
   async updateById(id: number, updateIngredientDto: UpdateIngredientDto) {
-    const { name, availableCount, supplierId } = updateIngredientDto;
+    const { name, availableCount, supplierId, unit } = updateIngredientDto;
 
     const ingredient = await this.ingredientRepo.findOne({
       where: { id },
@@ -67,6 +68,10 @@ export class IngredientsService {
 
     if (availableCount !== undefined) {
       ingredient.availableCount = availableCount;
+    }
+
+    if (unit !== undefined) {
+      ingredient.unit = unit;
     }
 
     if (supplierId) {

@@ -112,81 +112,93 @@ async function seed() {
     console.log('Seeding ingredients...');
     const coffee = await ingredientRepository.save({
       name: 'Coffee Beans',
-      availableCount: 10000,
+      availableCount: 1000.5,
+      unit: 'gram',
       supplierId: supplier1.id,
     });
 
     const milk = await ingredientRepository.save({
       name: 'Fresh Milk',
       availableCount: 5000,
+      unit: 'ml',
       supplierId: supplier2.id,
     });
 
     const sugar = await ingredientRepository.save({
       name: 'Sugar',
       availableCount: 8000,
+      unit: 'gram',
       supplierId: supplier2.id,
     });
 
     const tea = await ingredientRepository.save({
       name: 'Black Tea',
       availableCount: 3000,
+      unit: 'gram',
       supplierId: supplier3.id,
     });
 
     const greenTea = await ingredientRepository.save({
       name: 'Green Tea',
       availableCount: 2500,
+      unit: 'gram',
       supplierId: supplier3.id,
     });
 
     const chocolate = await ingredientRepository.save({
       name: 'Chocolate Powder',
       availableCount: 2000,
+      unit: 'gram',
       supplierId: supplier4.id,
     });
 
     const vanillaSyrup = await ingredientRepository.save({
       name: 'Vanilla Syrup',
       availableCount: 1500,
+      unit: 'ml',
       supplierId: supplier4.id,
     });
 
     const caramelSyrup = await ingredientRepository.save({
       name: 'Caramel Syrup',
       availableCount: 1500,
+      unit: 'ml',
       supplierId: supplier4.id,
     });
 
     const whippedCream = await ingredientRepository.save({
       name: 'Whipped Cream',
       availableCount: 2000,
+      unit: 'gram',
       supplierId: supplier2.id,
     });
 
     const iceCubes = await ingredientRepository.save({
       name: 'Ice Cubes',
       availableCount: 10000,
+      unit: 'gram',
       supplierId: supplier2.id,
     });
 
     const lemonJuice = await ingredientRepository.save({
       name: 'Lemon Juice',
       availableCount: 1000,
+      unit: 'ml',
       supplierId: supplier3.id,
     });
 
     const mintLeaves = await ingredientRepository.save({
       name: 'Mint Leaves',
       availableCount: 500,
+      unit: 'gram',
       supplierId: supplier3.id,
     });
 
     // 5. Tạo đồ uống
     console.log('Seeding drinks...');
-    const fakeImageUrl =
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg/440px-Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg';
+    const fakeImageUrl = 'https://example.com/coffee-image.jpg';
 
+    // Create drinks with explicit column names
     const americano = await drinkRepository.save({
       name: 'Americano',
       image_url: fakeImageUrl,

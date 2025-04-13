@@ -26,11 +26,10 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('stock-imports')
-@ApiBearerAuth('JWT-auth')
 @Controller('stock-imports')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')  // Remove duplicate ApiBearerAuth
 export class StockImportController {
   constructor(private readonly stockImportService: StockImportService) {}
 
