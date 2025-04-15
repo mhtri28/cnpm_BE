@@ -26,6 +26,7 @@ import { DrinksModule } from './modules/drinks/drinks.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import vnpayConfig from './modules/payments/config/vnpay.config';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 config();
 
@@ -68,6 +69,7 @@ config();
     DrinksModule,
     PaymentsModule,
     OrdersModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
