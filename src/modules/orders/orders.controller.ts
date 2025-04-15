@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   UseGuards,
+  Query,
+  Delete,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -18,10 +20,13 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Order } from './entities/order.entity';
+import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
+import { PaginationResult } from './dto/filter/pagination-result.interface';
 
 @ApiTags('Đơn đặt')
 @Controller('orders')
@@ -43,16 +48,60 @@ export class OrdersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lấy tất cả đơn đặt' })
+  @ApiOperation({
+    summary: 'Lấy danh sách đơn đặt, có thể lọc, sắp xếp và phân trang',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Danh sách tất cả đơn đặt',
-    type: [Order],
+    description: 'Danh sách đơn đặt phân trang',
+    type: PaginationResult,
+  })
+  @ApiQuery({
+    name: 'tableName',
+    required: false,
+    description: 'Lọc theo tên bàn (tìm kiếm tương đối)',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Lọc theo trạng thái đơn hàng',
+    enum: ['pending', 'paid', 'preparing', 'completed', 'canceled'],
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description:
+      'Sắp xếp theo trường và hướng, phân tách bởi dấu phẩy. Ví dụ: createdAt_DESC,status_ASC',
+    enum: OrderSort,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Số trang (bắt đầu từ 1)',
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Số lượng kết quả trên mỗi trang',
+    type: Number,
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'withCanceled',
+    required: false,
+    description: 'Bao gồm đơn hàng đã hủy trong kết quả (mặc định: false)',
+    type: Boolean,
+    example: false,
   })
   @ApiBearerAuth()
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
-  findAll() {
-    return this.ordersService.findAll();
+  findAll(
+    @Query() filterDto: FilterOrdersDto,
+  ): Promise<PaginationResult<Order>> {
+    return this.ordersService.findAll(filterDto);
   }
 
   @Get(':id')
@@ -79,5 +128,17 @@ export class OrdersController {
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(id, updateOrderDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Xóa đơn đặt' })
+  @ApiResponse({
+    status: 200,
+    description: 'Đơn đặt đã được xóa thành công',
+  })
+  @ApiBearerAuth()
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
+  remove(@Param('id') id: string) {
+    return this.ordersService.remove(id);
   }
 }
