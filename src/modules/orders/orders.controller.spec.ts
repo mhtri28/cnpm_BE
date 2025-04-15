@@ -18,6 +18,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
+import { FilterOrdersDto } from './dto/filter/filter-orders.dto';
 
 describe('OrdersController', () => {
   let controller: OrdersController;
@@ -96,27 +97,35 @@ describe('OrdersController', () => {
 
   describe('findAll', () => {
     it('should return an array of orders', async () => {
-      const mockOrders: Partial<Order>[] = [
-        {
-          id: '1',
-          employeeId: 1,
-          tableId: 'table-1',
-          status: OrderStatus.PENDING,
-        },
-        {
-          id: '2',
-          employeeId: 2,
-          tableId: 'table-2',
-          status: OrderStatus.PAID,
-        },
-      ];
+      const mockOrders = {
+        items: [
+          {
+            id: '1',
+            employeeId: 1,
+            tableId: 'table-1',
+            status: OrderStatus.PENDING,
+          },
+          {
+            id: '2',
+            employeeId: 2,
+            tableId: 'table-2',
+            status: OrderStatus.PAID,
+          },
+        ],
+        total: 2,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      };
 
+      // Sử dụng một đối tượng filterDto rỗng
+      const filterDto = new FilterOrdersDto();
       mockOrdersService.findAll.mockResolvedValue(mockOrders);
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(filterDto);
 
       expect(result).toBe(mockOrders);
-      expect(mockOrdersService.findAll).toHaveBeenCalled();
+      expect(mockOrdersService.findAll).toHaveBeenCalledWith(filterDto);
     });
   });
 

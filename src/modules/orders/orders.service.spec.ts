@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { DrinksService } from '../drinks/drinks.service';
@@ -14,6 +14,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Drink } from '../drinks/entities/drink.entity';
 import { Table } from '../tables/entities/table.entity';
 import { Employee } from '../employees/entities/employee.entity';
+import { FilterOrdersDto } from './dto/filter/filter-orders.dto';
 
 const mockDataSource = {
   createQueryRunner: jest.fn().mockReturnValue({
@@ -29,13 +30,30 @@ const mockDataSource = {
   }),
 };
 
-const mockOrderRepository = () => ({
-  find: jest.fn(),
-  findOne: jest.fn(),
-  save: jest.fn(),
-  create: jest.fn(),
-  delete: jest.fn(),
-});
+// Mở rộng mock repository để hỗ trợ queryBuilder
+const mockOrderRepository = () => {
+  const items = [{ id: '1', status: OrderStatus.PENDING }];
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockResolvedValue(items),
+    getCount: jest.fn().mockResolvedValue(items.length)
+  };
+
+  return {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    save: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder)
+  };
+};
 
 const mockOrderItemRepository = () => ({
   find: jest.fn(),
@@ -106,7 +124,7 @@ const mockEmployeesService = () => ({
 
 describe('OrdersService', () => {
   let service: OrdersService;
-  let orderRepository: Repository<Order>;
+  let orderRepository: any;
   let drinksService: { findOne: jest.Mock };
   let tablesService: { findOne: jest.Mock };
   let employeesService: { findById: jest.Mock };
@@ -157,22 +175,27 @@ describe('OrdersService', () => {
 
   describe('findAll', () => {
     it('should return an array of orders', async () => {
-      const mockOrders = [{ id: '1', status: OrderStatus.PENDING }];
-      (orderRepository.find as jest.Mock).mockResolvedValue(
-        mockOrders as Order[],
-      );
+      const mockItems = [{ id: '1', status: OrderStatus.PENDING }];
 
-      const result = await service.findAll();
-      expect(result).toEqual(mockOrders);
-      expect(orderRepository.find).toHaveBeenCalledWith({
-        relations: [
-          'orderItems',
-          'employee',
-          'table',
-          'payment',
-          'orderItems.drink',
-        ],
-      });
+      // Thiết lập giá trị trả về cho mockQueryBuilder
+      const queryBuilder = orderRepository.createQueryBuilder();
+      queryBuilder.getMany.mockResolvedValue(mockItems);
+      queryBuilder.getCount.mockResolvedValue(mockItems.length);
+
+      // Tạo một đối tượng FilterOrdersDto rỗng
+      const filterDto = new FilterOrdersDto();
+
+      const result = await service.findAll(filterDto);
+
+      // Kiểm tra kết quả phân trang
+      expect(result.items).toEqual(mockItems);
+      expect(result.total).toEqual(mockItems.length);
+      expect(result.page).toEqual(1);
+      expect(result.limit).toEqual(10);
+      expect(result.totalPages).toEqual(1);
+
+      // Kiểm tra queryBuilder được gọi
+      expect(orderRepository.createQueryBuilder).toHaveBeenCalledWith('order');
     });
   });
 
