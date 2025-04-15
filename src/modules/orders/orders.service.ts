@@ -13,6 +13,17 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { DrinksService } from '../drinks/drinks.service';
 import { TablesService } from '../tables/tables.service';
 import { EmployeesService } from '../employees/employees.service';
+import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
+import { PaginationResult } from './dto/filter/pagination-result.interface';
+
+// Định nghĩa thứ tự ưu tiên cho các trạng thái đơn hàng
+// const ORDER_STATUS_PRIORITY = {
+//   [OrderStatus.PENDING]: 1,
+//   [OrderStatus.PAID]: 2,
+//   [OrderStatus.PREPARING]: 3,
+//   [OrderStatus.COMPLETED]: 4,
+//   [OrderStatus.CANCELED]: 5,
+// };
 
 @Injectable()
 export class OrdersService {
@@ -28,7 +39,7 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    // Kiểm tra xem bàn có tồn tại không
+    // Kiểm tra bàn có tồn tại không
     const table = await this.tablesService.findOne(createOrderDto.tableId);
     if (!table) {
       throw new NotFoundException(
@@ -36,16 +47,17 @@ export class OrdersService {
       );
     }
 
-    // Kiểm tra xem nhân viên có tồn tại không
-    try {
-      await this.employeesService.findById(createOrderDto.employeeId);
-    } catch {
+    // Kiểm tra nhân viên có tồn tại không
+    const employee = await this.employeesService.findById(
+      createOrderDto.employeeId,
+    );
+    if (!employee) {
       throw new NotFoundException(
         `Không tìm thấy nhân viên với ID: ${createOrderDto.employeeId}`,
       );
     }
 
-    // Bắt đầu transaction
+    // Tạo transaction để đảm bảo tính toàn vẹn dữ liệu
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -84,13 +96,13 @@ export class OrdersService {
         }),
       );
 
-      // Lưu các mục đơn hàng vào database
+      // Lưu các mục đơn hàng
       await queryRunner.manager.save(orderItems);
 
       // Commit transaction
       await queryRunner.commitTransaction();
 
-      // Trả về đơn hàng đã tạo kèm các mục
+      // Trả về đơn hàng đã được tạo kèm các mối quan hệ
       return this.findOne(order.id);
     } catch (error) {
       // Rollback transaction nếu có lỗi
@@ -102,15 +114,143 @@ export class OrdersService {
     }
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.orderRepository.find({
-      relations: [
-        'orderItems',
-        'employee',
-        'table',
-        'payment',
-        'orderItems.drink',
-      ],
+  async findAll(filterDto?: FilterOrdersDto): Promise<PaginationResult<Order>> {
+    const {
+      tableName,
+      status,
+      sort,
+      page = 1,
+      limit = 10,
+      withCanceled = false,
+    } = filterDto || {};
+
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.employee', 'employee')
+      .leftJoinAndSelect('order.table', 'table')
+      .leftJoinAndSelect('order.payment', 'payment')
+      .leftJoinAndSelect('orderItems.drink', 'drink');
+
+    // Áp dụng các điều kiện lọc
+    if (tableName) {
+      queryBuilder.andWhere(`table.name = :tableName`, {
+        tableName: tableName,
+      });
+    }
+
+    if (status) {
+      queryBuilder.andWhere('order.status = :status', { status });
+    } else if (!withCanceled) {
+      // Nếu không có lọc trạng thái cụ thể và không yêu cầu đơn hàng đã hủy,
+      // loại bỏ tất cả đơn hàng có trạng thái CANCELED
+      queryBuilder.andWhere('order.status != :canceledStatus', {
+        canceledStatus: OrderStatus.CANCELED,
+      });
+    }
+
+    // Áp dụng sắp xếp
+    const sortParams = this.parseSortString(sort);
+
+    if (sortParams.length === 0) {
+      // Mặc định, sắp xếp theo status priority và sau đó theo createdAt
+      queryBuilder.addSelect(
+        `CASE
+        WHEN order.status = '${OrderStatus.PENDING}' THEN 1
+        WHEN order.status = '${OrderStatus.PAID}' THEN 2
+        WHEN order.status = '${OrderStatus.PREPARING}' THEN 3
+        WHEN order.status = '${OrderStatus.COMPLETED}' THEN 4
+        WHEN order.status = '${OrderStatus.CANCELED}' THEN 5
+        ELSE 6 END`,
+        'order_status_priority',
+      );
+      queryBuilder.orderBy('order_status_priority', 'ASC');
+      queryBuilder.addOrderBy('order.createdAt', 'DESC');
+    } else {
+      let isFirstSort = true;
+
+      for (const param of sortParams) {
+        const { field, direction } = param;
+
+        if (field === 'status') {
+          // Nếu sắp xếp theo trạng thái, sử dụng status priority
+          queryBuilder.addSelect(
+            `CASE
+            WHEN order.status = '${OrderStatus.PENDING}' THEN 1
+            WHEN order.status = '${OrderStatus.PAID}' THEN 2
+            WHEN order.status = '${OrderStatus.PREPARING}' THEN 3
+            WHEN order.status = '${OrderStatus.COMPLETED}' THEN 4
+            WHEN order.status = '${OrderStatus.CANCELED}' THEN 5
+            ELSE 6 END`,
+            'order_status_priority',
+          );
+
+          if (isFirstSort) {
+            queryBuilder.orderBy('order_status_priority', direction);
+            isFirstSort = false;
+          } else {
+            queryBuilder.addOrderBy('order_status_priority', direction);
+          }
+        } else {
+          // Sắp xếp bình thường cho các trường khác
+          if (isFirstSort) {
+            queryBuilder.orderBy(`order.${field}`, direction);
+            isFirstSort = false;
+          } else {
+            queryBuilder.addOrderBy(`order.${field}`, direction);
+          }
+        }
+      }
+    }
+
+    // Áp dụng phân trang
+    const skip = (page - 1) * limit;
+
+    // Lấy tổng số kết quả
+    const total = await queryBuilder.getCount();
+
+    // Lấy kết quả phân trang
+    const items = await queryBuilder.skip(skip).take(limit).getMany();
+
+    // Tính tổng số trang
+    const totalPages = Math.ceil(total / limit);
+
+    // Trả về kết quả phân trang
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
+  }
+
+  private parseSortString(
+    sortString?: string,
+  ): { field: string; direction: 'ASC' | 'DESC' }[] {
+    if (!sortString) {
+      return [];
+    }
+
+    return sortString.split(',').map((sort) => {
+      const trimmedSort = sort.trim() as OrderSort;
+
+      if (trimmedSort === OrderSort.CREATED_AT_ASC) {
+        return { field: 'createdAt', direction: 'ASC' as const };
+      } else if (trimmedSort === OrderSort.CREATED_AT_DESC) {
+        return { field: 'createdAt', direction: 'DESC' as const };
+      } else if (trimmedSort === OrderSort.UPDATED_AT_ASC) {
+        return { field: 'updatedAt', direction: 'ASC' as const };
+      } else if (trimmedSort === OrderSort.UPDATED_AT_DESC) {
+        return { field: 'updatedAt', direction: 'DESC' as const };
+      } else if (trimmedSort === OrderSort.STATUS_ASC) {
+        return { field: 'status', direction: 'ASC' as const };
+      } else if (trimmedSort === OrderSort.STATUS_DESC) {
+        return { field: 'status', direction: 'DESC' as const };
+      } else {
+        // Mặc định sắp xếp theo trạng thái và sau đó theo thời gian tạo
+        return { field: 'status', direction: 'ASC' as const };
+      }
     });
   }
 
