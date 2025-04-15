@@ -118,7 +118,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         orderId VARCHAR(36) NOT NULL,
         transactionId BIGINT NOT NULL,
         totalAmount DECIMAL(8, 2) NOT NULL,
-        method ENUM('cash', 'card', 'momo', 'zalo_pay', 'vnpay') NOT NULL,
+        method ENUM('cash','vnpay') NOT NULL,
         status ENUM('pending', 'completed', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -148,7 +148,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         ingredientId BIGINT UNSIGNED NOT NULL,
         stockImportId VARCHAR(36) NOT NULL,
         unitPrice DECIMAL(8, 2) NOT NULL,
-        quantity BIGINT NOT NULL,
+        quantity DECIMAL(8, 2) NOT NULL,
         subTotal DECIMAL(8, 2) NOT NULL,
         FOREIGN KEY (ingredientId) REFERENCES ingredients(id),
         FOREIGN KEY (stockImportId) REFERENCES stock_imports(id)
