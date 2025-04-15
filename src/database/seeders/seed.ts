@@ -702,9 +702,6 @@ async function seed() {
       // Tạo thanh toán
       const paymentMethods = [
         PaymentMethod.CASH,
-        PaymentMethod.CARD,
-        PaymentMethod.MOMO,
-        PaymentMethod.ZALO_PAY,
         PaymentMethod.VNPAY,
       ];
       const randomMethod =
