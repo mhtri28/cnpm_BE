@@ -12,6 +12,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export enum PaymentMethod {
   CASH = 'cash',
+  CARD = 'card',
+  MOMO = 'momo',
+  ZALO_PAY = 'zalo_pay',
   VNPAY = 'vnpay',
 }
 
