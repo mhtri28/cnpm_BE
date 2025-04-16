@@ -34,9 +34,9 @@ export class Recipe {
 
   @ApiProperty({
     description: 'Số lượng nguyên liệu cần dùng',
-    example: 30,
+    example: 30.5,
   })
-  @Column({ type: 'bigint' })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   quantity: number;
 
   @ApiProperty({

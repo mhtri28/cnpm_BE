@@ -21,11 +21,11 @@ export class RecipeItemDto {
 
   @ApiProperty({
     description: 'Số lượng nguyên liệu cần dùng',
-    example: 50,
+    example: 50.5,
   })
   @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
   quantity: number;
 }
 
