@@ -77,7 +77,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
         drinkId BIGINT UNSIGNED NOT NULL,
         ingredientId BIGINT UNSIGNED NOT NULL,
-        quantity BIGINT NOT NULL,
+        quantity DECIMAL(8,2) NOT NULL,
         FOREIGN KEY (drinkId) REFERENCES drinks(id),
         FOREIGN KEY (ingredientId) REFERENCES ingredients(id)
       )
@@ -119,7 +119,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
         transactionId BIGINT NOT NULL,
         totalAmount DECIMAL(8, 2) NOT NULL,
         method ENUM('cash','vnpay') NOT NULL,
-        status ENUM('pending', 'completed', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
+        status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (orderId) REFERENCES orders(id)
