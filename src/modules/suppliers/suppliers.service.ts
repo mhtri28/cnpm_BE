@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Supplier } from './entities/supplier.entity';
@@ -24,6 +24,15 @@ export class SupplierService {
 
   findAll() {
     return this.supplierRepo.find();
+  }
+
+  findAllDeleted() {
+    return this.supplierRepo.find({
+      withDeleted: true,
+      where: {
+        deletedAt: Not(IsNull())
+      }
+    });
   }
 
   async findById(id: number) {
@@ -65,7 +74,7 @@ export class SupplierService {
   }
 
   deleteById(id: number) {
-    return this.supplierRepo.delete(id);
+    return this.supplierRepo.softDelete(id);
   }
 
   async restore(id: number) {

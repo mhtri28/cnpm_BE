@@ -30,43 +30,40 @@ import {
 import { Supplier } from './entities/supplier.entity';
 
 @ApiTags('suppliers')
+@ApiBearerAuth('JWT-auth')
 @Controller('suppliers')
-@UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth('JWT-auth') // Keep only one ApiBearerAuth with the correct token name
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
   @Post()
-  @Roles(EmployeeRole.ADMIN) // Remove duplicate UseGuards since it's already in the controller level
-  @ApiOperation({ summary: 'Tạo nhà cung cấp mới' })
-  @ApiCreatedResponse({
-    type: Supplier,
-    description: 'Nhà cung cấp đã được tạo thành công',
-  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   create(@Body() createSupplierDto: CreateSupplierDto) {
     return this.supplierService.create(createSupplierDto);
   }
 
-  @Get()
+  @Get('deleted')  // Di chuyển route này lên trước các routes có param :id
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
-  @ApiOperation({ summary: 'Lấy tất cả nhà cung cấp' })
+  @ApiOperation({ summary: 'Lấy danh sách nhà cung cấp đã xóa' })
   @ApiOkResponse({
     type: [Supplier],
-    description: 'Trả về danh sách tất cả nhà cung cấp',
+    description: 'Trả về danh sách các nhà cung cấp đã bị xóa',
   })
+  findAllDeleted() {
+    return this.supplierService.findAllDeleted();
+  }
+
+  @Get()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   findAll() {
     return this.supplierService.findAll();
   }
 
-  @Get(':id')
+  @Get(':id')  // Các routes có param :id đặt sau
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
-  @ApiOperation({ summary: 'Lấy thông tin nhà cung cấp theo ID' })
-  @ApiOkResponse({
-    type: Supplier,
-    description: 'Trả về thông tin nhà cung cấp',
-  })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy nhà cung cấp' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.findById(id);
   }
