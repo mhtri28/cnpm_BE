@@ -44,57 +44,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check for Prettier config
-        id: check-prettier-config
+      # Kiểm tra lỗi cú pháp trước khi format
+      - name: Check for syntax errors
+        run: npx tsc --noEmit
+        continue-on-error: true # Cho phép tiếp tục ngay cả khi có lỗi
+
+      # Chạy Prettier với cờ --write để sửa lỗi tự động
+      - name: Format code with Prettier
+        run: npx prettier --write "src/**/*.{ts,js,json}"
+
+      # Kiểm tra nếu có thay đổi sau khi chạy Prettier
+      - name: Check if there are changes
+        id: git-check
         run: |
-          if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f "prettier.config.js" ]; then
-            echo "has_config=true" >> $GITHUB_OUTPUT
-          else
-            echo "::warning::No Prettier configuration found. Using default settings."
-            echo "has_config=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Ensure NestJS build is clean before formatting
-      - name: Check NestJS build
-        run: npm run build --if-present
-        continue-on-error: true
-
-      - name: Format code
-        run: npm run format
-
-      - name: Check if the current branch is protected
-        id: check-branch
-        run: |
-          BRANCH=${GITHUB_REF#refs/heads/}
-          if [[ "$BRANCH" == "main" ]]; then
-            echo "is_protected=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_protected=false" >> $GITHUB_OUTPUT
-          fi
+          git diff --exit-code || echo "has_changes=true" >> $GITHUB_OUTPUT
 
       - name: Commit changes
-        if: ${{ steps.check-branch.outputs.is_protected != 'true' }}
+        if: steps.git-check.outputs.has_changes == 'true'
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git diff --quiet && git diff --staged --quiet || (
-            git add -A &&
-            git commit -m "style: format code on branch ${GITHUB_REF#refs/heads/}" &&
-            git push origin "${GITHUB_REF#refs/heads/}" || echo "Push failed - there may have been no changes or a conflict occurred"
-          )
-
-      # For protected branches, create a pull request instead of direct push
-      - name: Create Pull Request for protected branches
-        if: ${{ steps.check-branch.outputs.is_protected == 'true' }}
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'style: format code on ${{ github.ref_name }}'
-          title: 'Auto-formatting on ${{ github.ref_name }}'
-          body: |
-            This PR contains auto-formatted code using Prettier.
-
-            This is an automated pull request created by the GitHub Actions workflow.
-          branch: auto-format-${{ github.ref_name }}
-          base: ${{ github.ref_name }}
-          delete-branch: true
+          git add -A
+          git commit -m "style: format code with Prettier"
+          git push
