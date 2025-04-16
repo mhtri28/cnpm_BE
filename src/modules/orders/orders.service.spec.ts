@@ -42,7 +42,7 @@ const mockOrderRepository = () => {
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue(items),
-    getCount: jest.fn().mockResolvedValue(items.length)
+    getCount: jest.fn().mockResolvedValue(items.length),
   };
 
   return {
@@ -51,7 +51,7 @@ const mockOrderRepository = () => {
     save: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
-    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder)
+    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
   };
 };
 

@@ -13,35 +13,35 @@ import { ApiProperty } from '@nestjs/swagger';
 export class Recipe {
   @ApiProperty({
     description: 'ID của công thức',
-    example: 1
+    example: 1,
   })
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
   @ApiProperty({
     description: 'ID của đồ uống',
-    example: 1
+    example: 1,
   })
   @Column({ type: 'bigint', unsigned: true })
   drinkId: number;
 
   @ApiProperty({
     description: 'ID của nguyên liệu',
-    example: 1
+    example: 1,
   })
   @Column({ type: 'bigint', unsigned: true })
   ingredientId: number;
 
   @ApiProperty({
     description: 'Số lượng nguyên liệu cần dùng',
-    example: 30
+    example: 30,
   })
   @Column({ type: 'bigint' })
   quantity: number;
 
   @ApiProperty({
     description: 'Thông tin đồ uống',
-    type: () => Drink
+    type: () => Drink,
   })
   @ManyToOne(() => Drink, (drink) => drink.recipes)
   @JoinColumn({ name: 'drinkId' })
@@ -49,7 +49,7 @@ export class Recipe {
 
   @ApiProperty({
     description: 'Thông tin nguyên liệu',
-    type: () => Ingredient
+    type: () => Ingredient,
   })
   @ManyToOne(() => Ingredient, (ingredient) => ingredient.recipes)
   @JoinColumn({ name: 'ingredientId' })

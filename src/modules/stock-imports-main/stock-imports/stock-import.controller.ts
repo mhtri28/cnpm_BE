@@ -29,7 +29,7 @@ import {
 @Controller('stock-imports')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth('JWT-auth')  // Remove duplicate ApiBearerAuth
+@ApiBearerAuth('JWT-auth') // Remove duplicate ApiBearerAuth
 export class StockImportController {
   constructor(private readonly stockImportService: StockImportService) {}
 

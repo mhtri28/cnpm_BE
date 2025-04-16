@@ -700,10 +700,7 @@ async function seed() {
       });
 
       // Tạo thanh toán
-      const paymentMethods = [
-        PaymentMethod.CASH,
-        PaymentMethod.VNPAY,
-      ];
+      const paymentMethods = [PaymentMethod.CASH, PaymentMethod.VNPAY];
       const randomMethod =
         paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
 
