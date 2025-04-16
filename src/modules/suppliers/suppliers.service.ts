@@ -30,8 +30,8 @@ export class SupplierService {
     return this.supplierRepo.find({
       withDeleted: true,
       where: {
-        deletedAt: Not(IsNull())
-      }
+        deletedAt: Not(IsNull()),
+      },
     });
   }
 
