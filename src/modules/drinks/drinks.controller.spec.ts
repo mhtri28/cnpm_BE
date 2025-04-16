@@ -4,7 +4,7 @@ import { DrinksService } from './drinks.service';
 import { CreateDrinkDto } from './dto/create-drink.dto';
 import { UpdateDrinkDto } from './dto/update-drink.dto';
 import { Drink } from './entities/drink.entity';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 
 // Mock các guards
 jest.mock('../../guard/auth.guard', () => ({
@@ -59,6 +59,8 @@ const mockDrinksService = {
   update: jest.fn(),
   remove: jest.fn(),
   getRecipeByDrinkId: jest.fn(),
+  findAllDeleted: jest.fn(),
+  restore: jest.fn(),
 };
 
 describe('DrinksController', () => {
@@ -287,6 +289,103 @@ describe('DrinksController', () => {
         NotFoundException,
       );
       expect(service.getRecipeByDrinkId).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('findAllDeleted', () => {
+    it('should return a list of soft deleted drinks', async () => {
+      // Arrange
+      const deletedDrinks = [
+        {
+          id: 3,
+          name: 'Cafe Đen Đá',
+          status: 'deleted',
+          deletedAt: new Date(),
+          // ...các thuộc tính khác
+        },
+        {
+          id: 4,
+          name: 'Trà Sữa Trân Châu',
+          status: 'deleted',
+          deletedAt: new Date(),
+          // ...các thuộc tính khác
+        },
+      ] as unknown as Drink[];
+
+      jest
+        .spyOn(service, 'findAllDeleted')
+        .mockResolvedValueOnce(deletedDrinks);
+
+      // Act
+      const result = await controller.findAllDeleted();
+
+      // Assert
+      expect(service.findAllDeleted).toHaveBeenCalled();
+      expect(result).toBe(deletedDrinks);
+    });
+  });
+
+  describe('restore', () => {
+    it('should restore a soft deleted drink', async () => {
+      // Arrange
+      const drinkId = '1';
+      const restoredDrink = {
+        id: 1,
+        name: 'Cà phê sữa đá',
+        // ...các thuộc tính khác
+        deletedAt: null,
+      } as unknown as Drink;
+
+      jest.spyOn(service, 'restore').mockResolvedValueOnce(restoredDrink);
+
+      // Act
+      const result = await controller.restore(drinkId);
+
+      // Assert
+      expect(service.restore).toHaveBeenCalledWith(1);
+      expect(result).toBe(restoredDrink);
+    });
+
+    it('should throw NotFoundException if drink not found', async () => {
+      // Arrange
+      const drinkId = '999';
+
+      jest
+        .spyOn(service, 'restore')
+        .mockRejectedValueOnce(
+          new NotFoundException(`Không tìm thấy đồ uống với id ${drinkId}`),
+        );
+
+      // Act & Assert
+      await expect(controller.restore(drinkId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(service.restore).toHaveBeenCalledWith(999);
+    });
+
+    it('should throw ConflictException if drink is not deleted', async () => {
+      // Arrange
+      const drinkId = '1';
+
+      jest
+        .spyOn(service, 'restore')
+        .mockRejectedValueOnce(
+          new ConflictException(`Đồ uống với id ${drinkId} chưa bị xóa`),
+        );
+
+      // Act & Assert
+      await expect(controller.restore(drinkId)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(service.restore).toHaveBeenCalledWith(1);
+    });
+
+    // Thay vì test các guard, chúng ta kiểm tra rằng controller được đúng annotations
+    it('should have proper decorators for restore method', () => {
+      // Lấy metadata của controller
+      const metadata = Reflect.getMetadata('__guards__', controller.restore);
+      // Kiểm tra rằng guards được áp dụng đúng cách
+      expect(metadata).toBeDefined();
     });
   });
 });

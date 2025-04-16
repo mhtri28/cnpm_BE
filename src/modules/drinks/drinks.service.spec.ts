@@ -248,6 +248,62 @@ describe('DrinksService', () => {
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
     });
+
+    it('should throw ConflictException when drink name already exists', async () => {
+      // Arrange
+      const createDrinkDto: CreateDrinkDto = {
+        name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
+        price: 29000,
+        recipe: [
+          { id: 1, quantity: 15 },
+          { id: 2, quantity: 30 },
+        ],
+      };
+
+      // Mock findOne để trả về một đồ uống đang tồn tại
+      drinkRepository.findOne!.mockResolvedValue({
+        ...mockDrink,
+        deletedAt: null,
+      });
+
+      // Act & Assert
+      await expect(service.create(createDrinkDto)).rejects.toThrow(
+        /Đồ uống với tên 'Cà phê sữa đá' đã tồn tại/,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { name: 'Cà phê sữa đá' },
+        withDeleted: true,
+      });
+    });
+
+    it('should throw ConflictException when drink name exists in soft deleted drinks', async () => {
+      // Arrange
+      const createDrinkDto: CreateDrinkDto = {
+        name: 'Cà phê sữa đá',
+        image_url: 'https://example.com/images/drink.jpg',
+        price: 29000,
+        recipe: [
+          { id: 1, quantity: 15 },
+          { id: 2, quantity: 30 },
+        ],
+      };
+
+      // Mock findOne để trả về một đồ uống đã bị xóa mềm
+      drinkRepository.findOne!.mockResolvedValue({
+        ...mockDrink,
+        deletedAt: new Date(),
+      });
+
+      // Act & Assert
+      await expect(service.create(createDrinkDto)).rejects.toThrow(
+        /Đồ uống với tên 'Cà phê sữa đá' đã tồn tại nhưng đã bị xóa/,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { name: 'Cà phê sữa đá' },
+        withDeleted: true,
+      });
+    });
   });
 
   describe('findAll', () => {
@@ -434,6 +490,177 @@ describe('DrinksService', () => {
       expect(drinkRepository.findOne).toHaveBeenCalledWith({
         where: { id: drinkId },
         relations: ['recipes', 'recipes.ingredient', 'orderItems'],
+      });
+    });
+  });
+
+  describe('findAllDeleted', () => {
+    it('should return all soft deleted drinks', async () => {
+      // Arrange
+      const deletedDrinks = [
+        {
+          ...mockDrink,
+          id: 3,
+          deletedAt: new Date(),
+        },
+        {
+          ...mockDrink,
+          id: 4,
+          name: 'Trà sữa trân châu',
+          deletedAt: new Date(),
+        },
+      ];
+
+      drinkRepository.find!.mockResolvedValue(deletedDrinks);
+
+      // Act
+      const result = await service.findAllDeleted();
+
+      // Assert
+      expect(drinkRepository.find).toHaveBeenCalledWith({
+        withDeleted: true,
+        where: {
+          deletedAt: expect.any(Object), // Not(IsNull())
+        },
+        relations: ['recipes', 'recipes.ingredient'],
+      });
+      expect(result).toEqual(deletedDrinks);
+    });
+  });
+
+  describe('restore', () => {
+    it('should restore a soft deleted drink', async () => {
+      // Arrange
+      const drinkId = 1;
+      const deletedDrink = {
+        ...mockDrink,
+        deletedAt: new Date(),
+      };
+      const restoredDrink = {
+        ...mockDrink,
+        deletedAt: null,
+      };
+
+      // Reset mock để đảm bảo không bị ảnh hưởng bởi các test trước đó
+      jest.clearAllMocks();
+
+      // Mock để kiểm tra đồ uống đã xóa mềm
+      drinkRepository.findOne!.mockImplementationOnce((options: any) => {
+        if (options?.where?.id === drinkId && options?.withDeleted === true) {
+          return Promise.resolve(deletedDrink);
+        }
+        return Promise.resolve(null);
+      });
+
+      // Mock để kiểm tra không có đồ uống nào với tên tương tự đang hoạt động
+      drinkRepository.findOne!.mockImplementationOnce((options: any) => {
+        if (options?.where?.name === deletedDrink.name) {
+          return Promise.resolve(null); // Không có đồ uống nào với tên này đang hoạt động
+        }
+        return Promise.resolve(null);
+      });
+
+      // Mock khi service.findOne được gọi sau khi restore
+      drinkRepository.findOne!.mockImplementationOnce((options: any) => {
+        if (options?.where?.id === drinkId) {
+          return Promise.resolve(restoredDrink);
+        }
+        return Promise.resolve(null);
+      });
+
+      // Mock phương thức restore
+      drinkRepository.restore = jest.fn().mockResolvedValue({ affected: 1 });
+
+      // Act
+      const result = await service.restore(drinkId);
+
+      // Assert
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        withDeleted: true,
+      });
+      expect(drinkRepository.restore).toHaveBeenCalledWith(drinkId);
+      expect(result).toEqual(restoredDrink);
+    });
+
+    it('should throw NotFoundException when drink not found', async () => {
+      // Arrange
+      const drinkId = 999;
+
+      drinkRepository.findOne!.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.restore(drinkId)).rejects.toThrow(NotFoundException);
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        withDeleted: true,
+      });
+    });
+
+    it('should throw ConflictException when drink is not deleted', async () => {
+      // Arrange
+      const drinkId = 1;
+      const activeDrink = {
+        ...mockDrink,
+        deletedAt: null,
+      };
+
+      drinkRepository.findOne!.mockResolvedValue(activeDrink);
+
+      // Act & Assert
+      await expect(service.restore(drinkId)).rejects.toThrow(
+        /Đồ uống với id 1 chưa bị xóa/,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        withDeleted: true,
+      });
+    });
+
+    it('should throw ConflictException when another drink with the same name exists', async () => {
+      // Arrange
+      const drinkId = 1;
+      const deletedDrink = {
+        ...mockDrink,
+        deletedAt: new Date(),
+      };
+      const existingDrink = {
+        ...mockDrink,
+        id: 2, // Đồ uống khác với cùng tên
+        deletedAt: null,
+      };
+
+      // Lần đầu tiên gọi findOne để kiểm tra đồ uống đã xóa
+      drinkRepository.findOne!.mockImplementationOnce((options: any) => {
+        if (
+          options &&
+          options.withDeleted &&
+          options.where &&
+          options.where.id === drinkId
+        ) {
+          return Promise.resolve(deletedDrink);
+        }
+        return Promise.resolve(null);
+      });
+
+      // Lần thứ hai gọi findOne để kiểm tra xung đột tên
+      drinkRepository.findOne!.mockImplementationOnce((options: any) => {
+        if (options && options.where && options.where.name === mockDrink.name) {
+          return Promise.resolve(existingDrink);
+        }
+        return Promise.resolve(null);
+      });
+
+      // Act & Assert
+      await expect(service.restore(drinkId)).rejects.toThrow(
+        /Không thể khôi phục đồ uống vì tên/,
+      );
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { id: drinkId },
+        withDeleted: true,
+      });
+      expect(drinkRepository.findOne).toHaveBeenCalledWith({
+        where: { name: mockDrink.name },
       });
     });
   });
