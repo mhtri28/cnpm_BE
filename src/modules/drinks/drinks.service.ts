@@ -6,7 +6,7 @@ import {
 import { CreateDrinkDto } from './dto/create-drink.dto';
 import { UpdateDrinkDto } from './dto/update-drink.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, Not, IsNull } from 'typeorm';
 import { Drink } from './entities/drink.entity';
 import { Recipe } from '../recipes/entities/recipe.entity';
 import { Ingredient } from '../ingredients/entities/ingredient.entity';
@@ -31,15 +31,24 @@ export class DrinksService {
   async create(createDrinkDto: CreateDrinkDto): Promise<Drink> {
     const { recipe, ...drinkData } = createDrinkDto;
 
-    // Kiểm tra xem tên đồ uống đã tồn tại chưa
+    // Kiểm tra xem tên đồ uống đã tồn tại chưa (bao gồm cả những đồ uống đã bị xóa mềm)
     const existingDrink = await this.drinksRepository.findOne({
       where: { name: drinkData.name },
+      withDeleted: true,
     });
 
     if (existingDrink) {
-      throw new ConflictException(
-        `Đồ uống với tên '${drinkData.name}' đã tồn tại. Vui lòng chọn tên khác.`,
-      );
+      if (existingDrink.deletedAt) {
+        // Nếu đồ uống đã bị xóa mềm
+        throw new ConflictException(
+          `Đồ uống với tên '${drinkData.name}' đã tồn tại nhưng đã bị xóa. Bạn có thể khôi phục đồ uống này thay vì tạo mới.`,
+        );
+      } else {
+        // Nếu đồ uống vẫn còn tồn tại
+        throw new ConflictException(
+          `Đồ uống với tên '${drinkData.name}' đã tồn tại. Vui lòng chọn tên khác.`,
+        );
+      }
     }
 
     // Tạo transaction để đảm bảo tính toàn vẹn dữ liệu
@@ -227,5 +236,48 @@ export class DrinksService {
     }
 
     return drink.recipes;
+  }
+
+  async findAllDeleted(): Promise<Drink[]> {
+    return this.drinksRepository.find({
+      withDeleted: true,
+      where: {
+        deletedAt: Not(IsNull()),
+      },
+      relations: ['recipes', 'recipes.ingredient'],
+    });
+  }
+
+  async restore(id: number): Promise<Drink> {
+    // Kiểm tra xem đồ uống có tồn tại và đã bị xóa chưa
+    const drink = await this.drinksRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!drink) {
+      throw new NotFoundException(`Không tìm thấy đồ uống với id ${id}`);
+    }
+
+    if (!drink.deletedAt) {
+      throw new ConflictException(`Đồ uống với id ${id} chưa bị xóa`);
+    }
+
+    // Kiểm tra nếu có đồ uống khác đang sử dụng cùng tên
+    const existingDrink = await this.drinksRepository.findOne({
+      where: { name: drink.name },
+    });
+
+    if (existingDrink) {
+      throw new ConflictException(
+        `Không thể khôi phục đồ uống vì tên '${drink.name}' đã được sử dụng bởi một đồ uống khác. Vui lòng xóa hoặc đổi tên đồ uống đó trước.`,
+      );
+    }
+
+    // Khôi phục đồ uống
+    await this.drinksRepository.restore(id);
+
+    // Trả về đồ uống đã khôi phục
+    return this.findOne(id);
   }
 }

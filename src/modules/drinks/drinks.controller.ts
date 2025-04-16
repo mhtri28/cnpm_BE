@@ -55,6 +55,16 @@ export class DrinksController {
     return this.drinksService.findAll();
   }
 
+  @Get('only-trashed')
+  @ApiOperation({ summary: 'Lấy danh sách đồ uống đã bị xóa mềm' })
+  @ApiOkResponse({
+    description: 'Danh sách đồ uống đã bị xóa mềm',
+    type: [Drink],
+  })
+  findAllDeleted() {
+    return this.drinksService.findAllDeleted();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin một đồ uống theo ID' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
@@ -64,6 +74,20 @@ export class DrinksController {
   })
   findOne(@Param('id') id: string) {
     return this.drinksService.findOne(+id);
+  }
+
+  @Post(':id/restore')
+  @Roles(EmployeeRole.ADMIN)
+  @UseGuards(AuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Khôi phục đồ uống đã bị xóa mềm' })
+  @ApiParam({ name: 'id', description: 'ID của đồ uống cần khôi phục' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Đồ uống đã được khôi phục thành công',
+    type: Drink,
+  })
+  restore(@Param('id') id: string) {
+    return this.drinksService.restore(+id);
   }
 
   @Patch(':id')
