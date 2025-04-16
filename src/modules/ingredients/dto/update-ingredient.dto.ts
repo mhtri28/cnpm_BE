@@ -6,7 +6,7 @@ export class UpdateIngredientDto {
   @ApiProperty({
     description: 'Tên nguyên liệu',
     example: 'Coffee Beans',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -15,7 +15,7 @@ export class UpdateIngredientDto {
   @ApiProperty({
     description: 'Số lượng hiện có',
     example: 1000.5,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -26,7 +26,7 @@ export class UpdateIngredientDto {
   @ApiProperty({
     description: 'Đơn vị tính',
     example: 'gram',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -35,7 +35,7 @@ export class UpdateIngredientDto {
   @ApiProperty({
     description: 'ID của nhà cung cấp',
     example: 1,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsNumber()

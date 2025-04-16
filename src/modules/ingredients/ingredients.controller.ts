@@ -33,7 +33,7 @@ import { Ingredient } from './entities/ingredient.entity';
 @Controller('ingredients')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth('JWT-auth')  // Update to match token name
+@ApiBearerAuth('JWT-auth') // Update to match token name
 export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
