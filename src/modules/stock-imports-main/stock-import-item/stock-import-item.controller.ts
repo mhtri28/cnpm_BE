@@ -67,7 +67,10 @@ export class StockImportItemController {
     type: StockImportItem,
     description: 'Trả về thông tin chi tiết phiếu nhập kho',
   })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy chi tiết phiếu nhập kho' })
+  @ApiResponse({
+    status: 404,
+    description: 'Không tìm thấy chi tiết phiếu nhập kho',
+  })
   findOne(@Param('id') id: string) {
     return this.stockImportItemService.findOne(id);
   }
@@ -79,7 +82,10 @@ export class StockImportItemController {
     type: StockImportItem,
     description: 'Thông tin chi tiết phiếu nhập kho đã được cập nhật',
   })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy chi tiết phiếu nhập kho' })
+  @ApiResponse({
+    status: 404,
+    description: 'Không tìm thấy chi tiết phiếu nhập kho',
+  })
   update(
     @Param('id') id: string,
     @Body() updateStockImportItemDto: UpdateStockImportItemDto,
@@ -91,7 +97,10 @@ export class StockImportItemController {
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Xóa chi tiết phiếu nhập kho' })
   @ApiOkResponse({ description: 'Chi tiết phiếu nhập kho đã được xóa mềm' })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy chi tiết phiếu nhập kho' })
+  @ApiResponse({
+    status: 404,
+    description: 'Không tìm thấy chi tiết phiếu nhập kho',
+  })
   remove(@Param('id') id: string) {
     return this.stockImportItemService.remove(id);
   }
@@ -103,7 +112,10 @@ export class StockImportItemController {
     type: StockImportItem,
     description: 'Chi tiết phiếu nhập kho đã được khôi phục',
   })
-  @ApiResponse({ status: 404, description: 'Không tìm thấy chi tiết phiếu nhập kho' })
+  @ApiResponse({
+    status: 404,
+    description: 'Không tìm thấy chi tiết phiếu nhập kho',
+  })
   restore(@Param('id') id: string) {
     return this.stockImportItemService.restore(id);
   }

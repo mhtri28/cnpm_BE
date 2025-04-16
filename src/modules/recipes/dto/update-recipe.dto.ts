@@ -13,8 +13,8 @@ export class UpdateRecipeDto {
   ingredientId?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Transform(({ value }) => Number(value))
-  @Min(1)
+  @Min(0.01)
   quantity?: number;
 }

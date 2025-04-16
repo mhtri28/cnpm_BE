@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';  // Add IsNull import
 import { Ingredient } from './entities/ingredient.entity';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
@@ -37,6 +37,15 @@ export class IngredientsService {
   findAll() {
     return this.ingredientRepo.find({
       relations: ['supplier'],
+    });
+  }
+
+  findAllDeleted() {
+    return this.ingredientRepo.find({
+      withDeleted: true,
+      where: {
+        deletedAt: Not(IsNull())
+      }
     });
   }
 

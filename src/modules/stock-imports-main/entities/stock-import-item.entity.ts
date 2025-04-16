@@ -7,49 +7,49 @@ import { ApiProperty } from '@nestjs/swagger';
 export class StockImportItem {
   @ApiProperty({
     description: 'ID của chi tiết phiếu nhập kho',
-    example: "550e8400-e29b-41d4-a716-446655440000"
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id: string;
 
   @ApiProperty({
     description: 'ID của nguyên liệu',
-    example: 1
+    example: 1,
   })
   @Column({ type: 'bigint', unsigned: true })
   ingredientId: number;
 
   @ApiProperty({
     description: 'ID của phiếu nhập kho',
-    example: "550e8400-e29b-41d4-a716-446655440000"
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @Column({ type: 'varchar', length: 36 })
   stockImportId: string;
 
   @ApiProperty({
     description: 'Đơn giá nhập',
-    example: 50000.00
+    example: 50000.0,
   })
   @Column('decimal', { precision: 8, scale: 2 })
   unitPrice: number;
 
   @ApiProperty({
     description: 'Số lượng nhập',
-    example: 100
+    example: 100,
   })
   @Column({ type: 'bigint' })
   quantity: number;
 
   @ApiProperty({
     description: 'Thành tiền',
-    example: 5000000.00
+    example: 5000000.0,
   })
   @Column('decimal', { precision: 10, scale: 2 })
   subTotal: number;
 
   @ApiProperty({
     description: 'Thông tin nguyên liệu',
-    type: () => Ingredient
+    type: () => Ingredient,
   })
   @ManyToOne(() => Ingredient, (ingredient) => ingredient.stockImportItems)
   @JoinColumn({ name: 'ingredientId' })
@@ -57,7 +57,7 @@ export class StockImportItem {
 
   @ApiProperty({
     description: 'Thông tin phiếu nhập kho',
-    type: () => StockImport
+    type: () => StockImport,
   })
   @ManyToOne(() => StockImport, (stockImport) => stockImport.stockImportItems)
   @JoinColumn({ name: 'stockImportId' })

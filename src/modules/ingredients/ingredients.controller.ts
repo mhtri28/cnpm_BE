@@ -33,9 +33,20 @@ import { Ingredient } from './entities/ingredient.entity';
 @Controller('ingredients')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth('JWT-auth')  // Update to match token name
+@ApiBearerAuth('JWT-auth')
 export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
+
+  @Get('deleted')  // Add this before other GET routes
+  @Roles(EmployeeRole.ADMIN)
+  @ApiOperation({ summary: 'Lấy danh sách nguyên liệu đã xóa' })
+  @ApiOkResponse({
+    type: [Ingredient],
+    description: 'Trả về danh sách các nguyên liệu đã bị xóa',
+  })
+  findAllDeleted() {
+    return this.ingredientsService.findAllDeleted();
+  }
 
   @Post()
   @Roles(EmployeeRole.ADMIN)

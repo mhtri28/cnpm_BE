@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsArray, ValidateNested, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class StockImportItemDto {
   @ApiProperty({
     description: 'ID của nguyên liệu',
-    example: 1
+    example: 1,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -13,7 +19,7 @@ class StockImportItemDto {
 
   @ApiProperty({
     description: 'Số lượng',
-    example: 50.5
+    example: 50.5,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -22,7 +28,7 @@ class StockImportItemDto {
 
   @ApiProperty({
     description: 'Đơn giá',
-    example: 25000
+    example: 25000,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -33,7 +39,7 @@ class StockImportItemDto {
 export class CreateStockImportDto {
   @ApiProperty({
     description: 'ID của nhân viên',
-    example: 1
+    example: 1,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -41,7 +47,7 @@ export class CreateStockImportDto {
 
   @ApiProperty({
     description: 'ID của nhà cung cấp',
-    example: 1
+    example: 1,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -54,14 +60,14 @@ export class CreateStockImportDto {
       {
         ingredientId: 1,
         quantity: 50.5,
-        unitPrice: 25000
+        unitPrice: 25000,
       },
       {
         ingredientId: 2,
         quantity: 100.75,
-        unitPrice: 15000
-      }
-    ]
+        unitPrice: 15000,
+      },
+    ],
   })
   @IsArray()
   @ValidateNested({ each: true })
