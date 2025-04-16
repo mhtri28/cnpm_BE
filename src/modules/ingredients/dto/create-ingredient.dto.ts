@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, Min, IsDecimal } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  Min,
+  IsDecimal,
+} from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 export class CreateIngredientDto {
   @ApiProperty({
     description: 'Tên nguyên liệu',
-    example: 'Coffee Beans'
+    example: 'Coffee Beans',
   })
   @IsNotEmpty()
   @IsString()
@@ -13,7 +19,7 @@ export class CreateIngredientDto {
 
   @ApiProperty({
     description: 'Số lượng hiện có',
-    example: 1000.5
+    example: 1000.5,
   })
   @IsNotEmpty()
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -23,7 +29,7 @@ export class CreateIngredientDto {
 
   @ApiProperty({
     description: 'Đơn vị tính',
-    example: 'gram'
+    example: 'gram',
   })
   @IsNotEmpty()
   @IsString()
@@ -31,7 +37,7 @@ export class CreateIngredientDto {
 
   @ApiProperty({
     description: 'ID của nhà cung cấp',
-    example: 1
+    example: 1,
   })
   @IsNotEmpty()
   @IsNumber()

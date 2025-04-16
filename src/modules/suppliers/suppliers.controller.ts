@@ -33,12 +33,12 @@ import { Supplier } from './entities/supplier.entity';
 @Controller('suppliers')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth('JWT-auth')  // Keep only one ApiBearerAuth with the correct token name
+@ApiBearerAuth('JWT-auth') // Keep only one ApiBearerAuth with the correct token name
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
   @Post()
-  @Roles(EmployeeRole.ADMIN)  // Remove duplicate UseGuards since it's already in the controller level
+  @Roles(EmployeeRole.ADMIN) // Remove duplicate UseGuards since it's already in the controller level
   @ApiOperation({ summary: 'Tạo nhà cung cấp mới' })
   @ApiCreatedResponse({
     type: Supplier,

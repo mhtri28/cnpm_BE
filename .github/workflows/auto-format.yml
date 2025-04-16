@@ -62,10 +62,6 @@ jobs:
       - name: Format code
         run: npm run format
 
-      - name: Run linter (if available)
-        run: npm run lint --if-present
-        continue-on-error: true
-
       - name: Check if the current branch is protected
         id: check-branch
         run: |

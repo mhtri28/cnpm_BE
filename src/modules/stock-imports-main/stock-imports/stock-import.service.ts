@@ -24,7 +24,8 @@ export class StockImportService {
 
   // Tạo Stock Import
   async create(createStockImportDto: CreateStockImportDto) {
-    const { employeeId, supplierId, stockImportItems, ...rest } = createStockImportDto;
+    const { employeeId, supplierId, stockImportItems, ...rest } =
+      createStockImportDto;
 
     // Check employee exists
     const employee = await this.employeeRepo.findOne({
@@ -55,7 +56,8 @@ export class StockImportService {
     let totalCost = 0;
     // Create stock import items if provided
     if (stockImportItems && stockImportItems.length > 0) {
-      const stockImportItemRepo = this.dataSource.getRepository(StockImportItem);
+      const stockImportItemRepo =
+        this.dataSource.getRepository(StockImportItem);
       const ingredientRepo = this.dataSource.getRepository(Ingredient);
 
       for (const item of stockImportItems) {
