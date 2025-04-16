@@ -43,7 +43,6 @@ const mockOrderRepository = () => {
     take: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue(items),
     getCount: jest.fn().mockResolvedValue(items.length),
-  };
 
   return {
     find: jest.fn(),
