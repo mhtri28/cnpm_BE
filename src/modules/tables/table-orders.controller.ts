@@ -96,7 +96,10 @@ export class TableOrdersController {
     @Query() filterDto: FilterOrdersDto,
   ): Promise<PaginationResult<Order>> {
     // Kiểm tra xem bàn có tồn tại không
-    await this.tablesService.findOne(tableId);
+    const table = await this.tablesService.findOne(tableId);
+    if (!table) {
+      throw new NotFoundException(`Table with ID ${tableId} not found`);
+    }
 
     // Gọi service để lấy đơn hàng theo bàn
     return this.ordersService.findOrdersByTable(tableId, filterDto);
