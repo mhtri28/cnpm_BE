@@ -53,6 +53,25 @@ export class TableOrdersController {
     status: 200,
     description: 'Danh sách đơn đặt của bàn được phân trang',
     type: PaginationResult,
+    examples: {
+      paginatedOrders: {
+        summary: 'A paginated list of orders',
+        value: {
+          items: [
+            {
+              id: 'orderId1',
+              tableId: 'tableId1',
+              status: 'pending',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
+          total: 1,
+          page: 1,
+          limit: 10,
+        },
+      },
+    },
   })
   @ApiQuery({
     name: 'status',
