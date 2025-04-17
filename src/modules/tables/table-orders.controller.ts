@@ -6,6 +6,7 @@ import {
   Query,
   Inject,
   forwardRef,
+  NotFoundException,
 } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
 import { AuthGuard } from '../../guard/auth.guard';
