@@ -17,6 +17,7 @@ import { TablesService } from '../tables/tables.service';
 import { EmployeesService } from '../employees/employees.service';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
+import { FilterTableOrdersDto } from '../tables/dto/filter-table-orders.dto';
 
 @Injectable()
 export class OrdersService {
@@ -353,7 +354,7 @@ export class OrdersService {
 
   async findOrdersByTable(
     tableId: string,
-    filterDto?: FilterOrdersDto,
+    filterDto?: FilterTableOrdersDto,
   ): Promise<PaginationResult<Order>> {
     const {
       status,
