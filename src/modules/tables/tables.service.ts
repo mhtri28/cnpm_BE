@@ -26,9 +26,12 @@ export class TablesService {
   async findAll(): Promise<Table[]> {
     const tables = await this.tableRepository.find();
 
-    // Check active orders for each table
+    // Tối ưu hóa: Lấy tất cả tableIds có đơn hàng đang hoạt động trong một truy vấn duy nhất
+    const tablesWithActiveOrders = await this.getTablesWithActiveOrders();
+
+    // Đánh dấu các bàn có đơn hàng đang hoạt động
     for (const table of tables) {
-      table.hasActiveOrder = await this.hasActiveOrder(table.id);
+      table.hasActiveOrder = tablesWithActiveOrders.includes(table.id);
     }
 
     return tables;
@@ -38,10 +41,27 @@ export class TablesService {
     const table = await this.tableRepository.findOne({ where: { id } });
 
     if (table) {
+      // Vẫn sử dụng hasActiveOrder cho trường hợp này vì chỉ kiểm tra một bàn
       table.hasActiveOrder = await this.hasActiveOrder(id);
     }
 
     return table;
+  }
+
+  private async getTablesWithActiveOrders(): Promise<string[]> {
+    // Truy vấn lấy tất cả các bàn có đơn hàng đang hoạt động (PAID hoặc PREPARING)
+    const activeOrdersQuery = await this.orderRepository
+      .createQueryBuilder('order')
+      .select('DISTINCT order.tableId')
+      .where('order.status IN (:...statuses)', {
+        statuses: [OrderStatus.PAID, OrderStatus.PREPARING],
+      })
+      .getRawMany();
+
+    // Trích xuất tableIds từ kết quả truy vấn
+    return activeOrdersQuery.map(
+      (item: { order_tableId: string }) => item.order_tableId,
+    );
   }
 
   private async hasActiveOrder(tableId: string): Promise<boolean> {
