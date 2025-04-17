@@ -49,9 +49,16 @@ export class Table {
   deletedAt: Date;
 
   @ApiProperty({
-    description: 'Trạng thái của bàn',
-    example: 'available',
+    description: 'Đơn đặt từ bàn',
+    type: () => Order,
+    isArray: true,
   })
   @OneToMany(() => Order, (order) => order.table)
   orders: Order[];
+
+  @ApiProperty({
+    description: 'Cho biết bàn có đơn đặt chưa hoàn thành hay không',
+    example: true,
+  })
+  hasActiveOrder: boolean;
 }
