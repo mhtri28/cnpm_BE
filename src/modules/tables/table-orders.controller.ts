@@ -1,4 +1,12 @@
-import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Query,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
 import { AuthGuard } from '../../guard/auth.guard';
 import { RoleGuard } from '../../guard/role.guard';
@@ -25,7 +33,9 @@ import { TablesService } from './tables.service';
 @UseGuards(AuthGuard, RoleGuard)
 export class TableOrdersController {
   constructor(
+    @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
+    @Inject(forwardRef(() => TablesService))
     private readonly tablesService: TablesService,
   ) {}
 

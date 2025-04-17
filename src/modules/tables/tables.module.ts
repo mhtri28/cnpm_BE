@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Table } from './entities/table.entity';
 import { TablesController } from './tables.controller';
@@ -12,7 +12,7 @@ import { OrdersModule } from '../orders/orders.module';
   imports: [
     TypeOrmModule.forFeature([Table, Order]),
     GuardModule,
-    OrdersModule,
+    forwardRef(() => OrdersModule),
   ],
   providers: [TablesService],
   controllers: [TablesController, TableOrdersController],
