@@ -22,12 +22,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Order } from '../orders/entities/order.entity';
-import {
-  FilterOrdersDto,
-  OrderSort,
-} from '../orders/dto/filter/filter-orders.dto';
+import { OrderSort } from '../orders/dto/filter/filter-orders.dto';
 import { PaginationResult } from '../orders/dto/filter/pagination-result.interface';
 import { TablesService } from './tables.service';
+import { FilterTableOrdersDto } from './dto/filter-table-orders.dto';
 
 @ApiTags('Đơn đặt theo bàn')
 @Controller('tables/:tableId/orders')
@@ -94,7 +92,7 @@ export class TableOrdersController {
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   async findOrdersByTable(
     @Param('tableId') tableId: string,
-    @Query() filterDto: FilterOrdersDto,
+    @Query() filterDto: FilterTableOrdersDto,
   ): Promise<PaginationResult<Order>> {
     // Kiểm tra xem bàn có tồn tại không
     const table = await this.tablesService.findOne(tableId);
