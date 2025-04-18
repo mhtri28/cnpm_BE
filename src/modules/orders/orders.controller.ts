@@ -111,6 +111,7 @@ export class OrdersController {
     description: 'Đơn đặt đã được tìm thấy',
     type: Order,
   })
+  @ApiBearerAuth()
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
