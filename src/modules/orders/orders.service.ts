@@ -42,16 +42,6 @@ export class OrdersService {
       );
     }
 
-    // Kiểm tra nhân viên có tồn tại không
-    const employee = await this.employeesService.findById(
-      createOrderDto.employeeId,
-    );
-    if (!employee) {
-      throw new NotFoundException(
-        `Không tìm thấy nhân viên với ID: ${createOrderDto.employeeId}`,
-      );
-    }
-
     // Tạo transaction để đảm bảo tính toàn vẹn dữ liệu
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -61,7 +51,7 @@ export class OrdersService {
       // Tạo đơn hàng mới
       const order = new Order();
       order.id = uuidv4();
-      order.employeeId = createOrderDto.employeeId;
+      order.employeeId = null; // Bắt đầu với employeeId là null
       order.tableId = createOrderDto.tableId;
       order.status = createOrderDto.status || OrderStatus.PENDING;
 
@@ -268,7 +258,11 @@ export class OrdersService {
     return order;
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async update(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+    currentUser: any,
+  ): Promise<Order> {
     const order = await this.findOne(id);
 
     if (!order) {
@@ -295,20 +289,32 @@ export class OrdersService {
       );
     }
 
-    // Reject updates with fields other than status
+    // Special handling for barista accepting an order (status changing from PAID to PREPARING)
     if (
-      updateOrderDto.employeeId ||
-      updateOrderDto.tableId ||
-      updateOrderDto.orderItems
+      order.status === OrderStatus.PAID &&
+      updateOrderDto.status === OrderStatus.PREPARING
     ) {
-      throw new BadRequestException(
-        'Chỉ cho phép cập nhật trạng thái đơn hàng. Không thể cập nhật các mục đơn hàng, nhân viên hoặc bàn.',
-      );
+      // Use the current authenticated user's ID (barista) for this order
+      if (!currentUser || !currentUser.id) {
+        throw new BadRequestException(
+          'Không tìm thấy thông tin người dùng đang đăng nhập.',
+        );
+      }
+
+      // Set the employeeId to the current barista's ID
+      order.employeeId = currentUser.id;
+      order.status = updateOrderDto.status;
+    }
+    // Case for only updating status (but not from PAID to PREPARING)
+    else if (updateOrderDto.status) {
+      order.status = updateOrderDto.status;
     }
 
-    // Update and save the order
-    if (updateOrderDto.status) {
-      order.status = updateOrderDto.status;
+    // Reject updates with fields other than status
+    if (updateOrderDto.tableId || updateOrderDto.orderItems) {
+      throw new BadRequestException(
+        'Không thể cập nhật các mục đơn hàng hoặc bàn.',
+      );
     }
 
     await this.orderRepository.save(order);

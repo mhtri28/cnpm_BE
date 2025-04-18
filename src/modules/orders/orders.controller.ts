@@ -27,6 +27,7 @@ import {
 import { Order } from './entities/order.entity';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
+import { CurrentUser } from '../../decorators/currentUser.decorator';
 
 @ApiTags('Đơn đặt')
 @Controller('orders')
@@ -42,7 +43,6 @@ export class OrdersController {
     description: 'Đơn đặt đã được tạo thành công',
     type: Order,
   })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
   }
@@ -125,9 +125,13 @@ export class OrdersController {
     type: Order,
   })
   @ApiBearerAuth()
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  @Roles(EmployeeRole.BARISTA)
+  update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.ordersService.update(id, updateOrderDto, currentUser);
   }
 
   @Delete(':id')

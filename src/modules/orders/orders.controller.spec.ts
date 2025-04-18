@@ -52,7 +52,6 @@ describe('OrdersController', () => {
   describe('create', () => {
     it('should create a new order', async () => {
       const createOrderDto: CreateOrderDto = {
-        employeeId: 1,
         tableId: 'table-1',
         orderItems: [
           {
@@ -64,7 +63,7 @@ describe('OrdersController', () => {
 
       const mockOrder: Partial<Order> = {
         id: '1',
-        employeeId: 1,
+        employeeId: null,
         tableId: 'table-1',
         status: OrderStatus.PENDING,
       };
@@ -79,7 +78,6 @@ describe('OrdersController', () => {
 
     it('should throw BadRequestException when creating order with invalid tableId', async () => {
       const createOrderDto: CreateOrderDto = {
-        employeeId: 1,
         tableId: 'invalid_table_id',
         orderItems: [{ drinkId: 1, quantity: 2 }],
       };
@@ -101,7 +99,7 @@ describe('OrdersController', () => {
         items: [
           {
             id: '1',
-            employeeId: 1,
+            employeeId: null,
             tableId: 'table-1',
             status: OrderStatus.PENDING,
           },
@@ -133,7 +131,7 @@ describe('OrdersController', () => {
     it('should return a single order', async () => {
       const mockOrder: Partial<Order> = {
         id: '1',
-        employeeId: 1,
+        employeeId: null,
         tableId: 'table-1',
         status: OrderStatus.PENDING,
       };
@@ -148,26 +146,64 @@ describe('OrdersController', () => {
   });
 
   describe('update', () => {
-    it('should update an order', async () => {
+    it('should update an order status', async () => {
       const updateOrderDto: UpdateOrderDto = {
         status: OrderStatus.PAID,
       };
 
       const mockOrder: Partial<Order> = {
         id: '1',
-        employeeId: 1,
+        employeeId: null,
         tableId: 'table-1',
         status: OrderStatus.PAID,
       };
 
+      const mockCurrentUser = { id: 1, role: 'BARISTA' };
+
       mockOrdersService.update.mockResolvedValue(mockOrder);
 
-      const result = await controller.update('1', updateOrderDto);
+      const result = await controller.update(
+        '1',
+        updateOrderDto,
+        mockCurrentUser,
+      );
 
       expect(result).toBe(mockOrder);
       expect(mockOrdersService.update).toHaveBeenCalledWith(
         '1',
         updateOrderDto,
+        mockCurrentUser,
+      );
+    });
+
+    it('should update an order status from PAID to PREPARING and set employeeId to currentUser.id', async () => {
+      const updateOrderDto: UpdateOrderDto = {
+        status: OrderStatus.PREPARING,
+      };
+
+      // Mock current authenticated barista
+      const mockCurrentUser = { id: 1, role: 'BARISTA' };
+
+      const mockOrder: Partial<Order> = {
+        id: '1',
+        employeeId: 1, // Should be set to currentUser.id
+        tableId: 'table-1',
+        status: OrderStatus.PREPARING,
+      };
+
+      mockOrdersService.update.mockResolvedValue(mockOrder);
+
+      const result = await controller.update(
+        '1',
+        updateOrderDto,
+        mockCurrentUser,
+      );
+
+      expect(result).toBe(mockOrder);
+      expect(mockOrdersService.update).toHaveBeenCalledWith(
+        '1',
+        updateOrderDto,
+        mockCurrentUser,
       );
     });
   });

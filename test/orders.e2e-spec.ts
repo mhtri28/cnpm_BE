@@ -29,6 +29,7 @@ interface OrderResponse {
 describe('OrdersController (e2e)', () => {
   let app: INestApplication;
   let orderId: string;
+  let authToken: string = 'test_token'; // Giả lập token xác thực
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -73,12 +74,12 @@ describe('OrdersController (e2e)', () => {
   });
 
   it('/orders (POST) - should create new order', async () => {
-    // Mô phỏng tạo đơn hàng mới
+    // Mô phỏng tạo đơn hàng mới - không cần employeeId
     const createOrderDto = {
-      employeeId: 1, // Đảm bảo employee ID này tồn tại trong database
+      tableId: '550e8400-e29b-41d4-a716-446655440000', // UUID válido
       orderItems: [
         {
-          drinkId: '1', // Đảm bảo drink ID này tồn tại trong database
+          drinkId: 1, // Đảm bảo drink ID này tồn tại trong database
           quantity: 2,
         },
       ],
@@ -86,7 +87,7 @@ describe('OrdersController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/orders')
-      .set('Authorization', 'Bearer test_token') // Giả lập token xác thực
+      .set('Authorization', `Bearer ${authToken}`)
       .send(createOrderDto)
       .expect(201);
 
@@ -98,12 +99,13 @@ describe('OrdersController (e2e)', () => {
     expect(responseBody.status).toBe(OrderStatus.PENDING);
     expect(responseBody).toHaveProperty('orderItems');
     expect(Array.isArray(responseBody.orderItems)).toBe(true);
+    expect(responseBody.employeeId).toBeNull(); // Kiểm tra employeeId là null khi tạo mới
   });
 
   it('/orders (GET) - should get all orders', async () => {
     const response = await request(app.getHttpServer())
       .get('/orders')
-      .set('Authorization', 'Bearer test_token') // Giả lập token xác thực
+      .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
     expect(Array.isArray(response.body)).toBe(true);
@@ -118,7 +120,7 @@ describe('OrdersController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .get(`/orders/${orderId}`)
-      .set('Authorization', 'Bearer test_token') // Giả lập token xác thực
+      .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
     const responseBody = response.body as OrderResponse;
@@ -126,7 +128,7 @@ describe('OrdersController (e2e)', () => {
     expect(responseBody).toHaveProperty('orderItems');
   });
 
-  it('/orders/:id (PATCH) - should update an order', async () => {
+  it('/orders/:id (PATCH) - should update an order status to PAID', async () => {
     // Sử dụng orderId đã được tạo ở test trước
     if (!orderId) {
       console.warn('orderId is undefined, skipping test');
@@ -139,21 +141,48 @@ describe('OrdersController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .patch(`/orders/${orderId}`)
-      .set('Authorization', 'Bearer test_token') // Giả lập token xác thực
+      .set('Authorization', `Bearer ${authToken}`)
       .send(updateOrderDto)
       .expect(200);
 
     const responseBody = response.body as OrderResponse;
     expect(responseBody.status).toBe(OrderStatus.PAID);
+    expect(responseBody.employeeId).toBeNull(); // employeeId vẫn là null sau khi cập nhật trạng thái thành PAID
+  });
+
+  it('/orders/:id (PATCH) - should update an order status from PAID to PREPARING and set employeeId', async () => {
+    // Sử dụng orderId đã được tạo ở test trước
+    if (!orderId) {
+      console.warn('orderId is undefined, skipping test');
+      return;
+    }
+
+    const updateOrderDto = {
+      status: OrderStatus.PREPARING,
+    };
+
+    // Giả lập có request từ barista với id = 1
+    const response = await request(app.getHttpServer())
+      .patch(`/orders/${orderId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(updateOrderDto)
+      .expect(200);
+
+    const responseBody = response.body as OrderResponse;
+    expect(responseBody.status).toBe(OrderStatus.PREPARING);
+    // Kiểm tra xem employeeId đã được cập nhật thành ID của barista hiện tại chưa
+    // Lưu ý: Vì trong môi trường test chúng ta có thể không có access đến currentUser chính xác
+    // Có thể kiểm tra rằng employeeId không còn là null
+    expect(responseBody.employeeId).not.toBeNull();
   });
 
   // Các test mô phỏng các tình huống lỗi
   it('/orders (POST) - should fail with invalid input', async () => {
     const invalidOrderDto = {
-      // Thiếu employeeId
+      // Thiếu tableId
       orderItems: [
         {
-          drinkId: '1',
+          drinkId: 1,
           quantity: 2,
         },
       ],
@@ -161,7 +190,7 @@ describe('OrdersController (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/orders')
-      .set('Authorization', 'Bearer test_token')
+      .set('Authorization', `Bearer ${authToken}`)
       .send(invalidOrderDto)
       .expect(400); // Validation error
   });
@@ -169,7 +198,7 @@ describe('OrdersController (e2e)', () => {
   it('/orders/:id (GET) - should fail with invalid ID', async () => {
     await request(app.getHttpServer())
       .get('/orders/invalid-id')
-      .set('Authorization', 'Bearer test_token')
+      .set('Authorization', `Bearer ${authToken}`)
       .expect(404); // Not found
   });
 });

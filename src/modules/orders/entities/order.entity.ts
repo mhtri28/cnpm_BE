@@ -35,9 +35,10 @@ export class Order {
   @ApiProperty({
     description: 'Reference to the barista who accepted the order',
     example: 1,
+    nullable: true,
   })
-  @Column({ type: 'bigint', unsigned: true })
-  employeeId: number;
+  @Column({ type: 'bigint', unsigned: true, nullable: true })
+  employeeId: number | null;
 
   @ApiProperty({
     description: 'Reference to the table associated with the order',
@@ -76,6 +77,7 @@ export class Order {
   @ApiProperty({
     description: 'Reference to the barista who accepted the order',
     type: () => Employee,
+    nullable: true,
   })
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employeeId' })

@@ -228,8 +228,12 @@ describe('OrdersService', () => {
   });
 
   describe('create', () => {
-    it('should create a new order with items', async () => {
-      const mockOrder = { id: '1', status: OrderStatus.PENDING };
+    it('should create a new order with items and null employeeId', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.PENDING,
+        employeeId: null,
+      };
       const mockOrderItem = {
         id: '1',
         orderId: '1',
@@ -242,9 +246,6 @@ describe('OrdersService', () => {
       // Mock tìm bàn thành công
       tablesService.findOne.mockResolvedValue(mockTable1 as Table);
 
-      // Mock tìm nhân viên thành công
-      employeesService.findById.mockResolvedValue(mockEmployee as Employee);
-
       // Mock drink service to return a drink
       drinksService.findOne.mockResolvedValue(mockDrink as Drink);
 
@@ -254,9 +255,8 @@ describe('OrdersService', () => {
         orderItems: [mockOrderItem],
       } as any);
 
-      // Create order DTO
+      // Create order DTO without employeeId
       const createOrderDto: CreateOrderDto = {
-        employeeId: 1,
         tableId: '550e8400-e29b-41d4-a716-446655440000',
         orderItems: [{ drinkId: 1, quantity: 2 }],
       };
@@ -270,7 +270,8 @@ describe('OrdersService', () => {
       expect(tablesService.findOne).toHaveBeenCalledWith(
         '550e8400-e29b-41d4-a716-446655440000',
       );
-      expect(employeesService.findById).toHaveBeenCalledWith(1);
+      // Should not call employeesService.findById since no employeeId is provided
+      expect(employeesService.findById).not.toHaveBeenCalled();
     });
 
     it('should throw an exception if table not found', async () => {
@@ -278,7 +279,6 @@ describe('OrdersService', () => {
       tablesService.findOne.mockResolvedValue(null);
 
       const createOrderDto: CreateOrderDto = {
-        employeeId: 1,
         tableId: 'invalid-table',
         orderItems: [{ drinkId: 1, quantity: 2 }],
       };
@@ -289,42 +289,14 @@ describe('OrdersService', () => {
       expect(tablesService.findOne).toHaveBeenCalledWith('invalid-table');
     });
 
-    it('should throw an exception if employee not found', async () => {
-      // Mock tìm bàn thành công
-      tablesService.findOne.mockResolvedValue(mockTable1 as Table);
-
-      // Mock tìm nhân viên thất bại
-      employeesService.findById.mockRejectedValue(
-        new NotFoundException(`Không tìm thấy nhân viên với ID: 999`),
-      );
-
-      const createOrderDto: CreateOrderDto = {
-        employeeId: 999,
-        tableId: '550e8400-e29b-41d4-a716-446655440000',
-        orderItems: [{ drinkId: 1, quantity: 2 }],
-      };
-
-      await expect(service.create(createOrderDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(tablesService.findOne).toHaveBeenCalledWith(
-        '550e8400-e29b-41d4-a716-446655440000',
-      );
-      expect(employeesService.findById).toHaveBeenCalledWith(999);
-    });
-
     it('should throw an exception if drink not found', async () => {
       // Mock tìm bàn thành công
       tablesService.findOne.mockResolvedValue(mockTable1 as Table);
-
-      // Mock tìm nhân viên thành công
-      employeesService.findById.mockResolvedValue(mockEmployee as Employee);
 
       // Mock to simulate a undefined drink (not found)
       drinksService.findOne.mockResolvedValue(undefined as any);
 
       const createOrderDto: CreateOrderDto = {
-        employeeId: 1,
         tableId: '550e8400-e29b-41d4-a716-446655440000',
         orderItems: [{ drinkId: 1, quantity: 2 }],
       };
@@ -335,21 +307,16 @@ describe('OrdersService', () => {
       expect(tablesService.findOne).toHaveBeenCalledWith(
         '550e8400-e29b-41d4-a716-446655440000',
       );
-      expect(employeesService.findById).toHaveBeenCalledWith(1);
       expect(drinksService.findOne).toHaveBeenCalledWith(1);
     });
   });
 
   describe('update', () => {
-    /**
-     * Only accept updating status.
-     * other fields like employeeId, tableId are not allowed to be updated.
-     */
-
     it('should update order status', async () => {
       const mockOrder = {
         id: '1',
         status: OrderStatus.PENDING,
+        employeeId: null,
       };
 
       // Mock findOne to return the order - first call includes relations
@@ -367,11 +334,12 @@ describe('OrdersService', () => {
         status: OrderStatus.CANCELED,
       };
 
+      const mockCurrentUser = { id: 1, name: 'Test User' };
+
       // Call service method
-      const result = await service.update('1', updateOrderDto);
+      const result = await service.update('1', updateOrderDto, mockCurrentUser);
 
       // Assertions
-      // First call to findOne should include relations (from the findOne method)
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: { id: '1' },
         relations: [
@@ -393,6 +361,75 @@ describe('OrdersService', () => {
       expect(result).toEqual({ ...mockOrder, status: OrderStatus.CANCELED });
     });
 
+    it('should update order status and set employeeId when changing from PAID to PREPARING', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.PAID,
+        employeeId: null,
+      };
+
+      // Mock findOne to return the order with PAID status
+      (orderRepository.findOne as jest.Mock).mockResolvedValueOnce(
+        mockOrder as Order,
+      );
+
+      // Mock findOne for the second call to return updated order
+      (orderRepository.findOne as jest.Mock).mockResolvedValueOnce({
+        ...mockOrder,
+        status: OrderStatus.PREPARING,
+        employeeId: 1,
+      } as Order);
+
+      const updateOrderDto: UpdateOrderDto = {
+        status: OrderStatus.PREPARING,
+      };
+
+      const mockCurrentUser = { id: 1, name: 'Test Barista' };
+
+      // Call service method
+      const result = await service.update('1', updateOrderDto, mockCurrentUser);
+
+      // Assertions
+      expect(orderRepository.save).toHaveBeenCalledWith({
+        ...mockOrder,
+        status: OrderStatus.PREPARING,
+        employeeId: 1, // Should be set to current user's ID
+      });
+
+      expect(result).toEqual({
+        ...mockOrder,
+        status: OrderStatus.PREPARING,
+        employeeId: 1,
+      });
+    });
+
+    it('should throw BadRequestException when no currentUser for PAID to PREPARING transition', async () => {
+      const mockOrder = {
+        id: '1',
+        status: OrderStatus.PAID,
+        employeeId: null,
+      };
+
+      // Mock findOne to return the order with PAID status
+      (orderRepository.findOne as jest.Mock).mockResolvedValue(
+        mockOrder as Order,
+      );
+
+      const updateOrderDto: UpdateOrderDto = {
+        status: OrderStatus.PREPARING,
+      };
+
+      // No current user provided (undefined)
+      await expect(
+        service.update('1', updateOrderDto, undefined),
+      ).rejects.toThrow(BadRequestException);
+
+      // Current user with no ID
+      await expect(
+        service.update('1', updateOrderDto, { name: 'Test User' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('should throw NotFoundException if order not found', async () => {
       (orderRepository.findOne as jest.Mock).mockResolvedValue(null);
 
@@ -400,10 +437,13 @@ describe('OrdersService', () => {
         status: OrderStatus.CANCELED,
       };
 
-      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      const mockCurrentUser = { id: 1, name: 'Test User' };
+
+      await expect(
+        service.update('1', updateOrderDto, mockCurrentUser),
+      ).rejects.toThrow(NotFoundException);
     });
+
     it('should throw BadRequestException if status is not valid', async () => {
       const mockOrder = {
         id: '1',
@@ -419,11 +459,14 @@ describe('OrdersService', () => {
         status: 'invalid_status' as OrderStatus,
       };
 
+      const mockCurrentUser = { id: 1, name: 'Test User' };
+
       // Call service method
-      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.update('1', updateOrderDto, mockCurrentUser),
+      ).rejects.toThrow(BadRequestException);
     });
+
     it('should throw BadRequestException if order status is COMPLETED or CANCELED', async () => {
       const mockOrder = {
         id: '1',
@@ -439,33 +482,12 @@ describe('OrdersService', () => {
         status: OrderStatus.CANCELED,
       };
 
-      // Call service method
-      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw BadRequestException if include other fields', async () => {
-      const mockOrder = {
-        id: '1',
-        status: OrderStatus.PENDING,
-      };
-
-      // Mock findOne to return the order
-      (orderRepository.findOne as jest.Mock).mockResolvedValue(
-        mockOrder as Order,
-      );
-
-      const updateOrderDto: UpdateOrderDto = {
-        employeeId: 1,
-        tableId: '550e8400-e29b-41d4-a716-446655440000',
-        status: OrderStatus.CANCELED,
-      };
+      const mockCurrentUser = { id: 1, name: 'Test User' };
 
       // Call service method
-      await expect(service.update('1', updateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.update('1', updateOrderDto, mockCurrentUser),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
