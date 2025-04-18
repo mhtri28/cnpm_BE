@@ -57,21 +57,21 @@ describe('UpdateOrderDto', () => {
     expect(transformed.status).toBe('invalid_status');
   });
 
-  it('should be invalid with other fields', async () => {
+  it('should be invalid with tableId field', async () => {
     dto.status = OrderStatus.PENDING;
-    // These fields should not be provided in this DTO
-    // employeeId and tableId are not allowed in UpdateOrderDto
-    // but we are providing them to check if the validation works
-    dto.employeeId = 1;
     dto.tableId = '550e8400-e29b-41d4-a716-446655440000';
 
     const errors = await validate(dto);
     expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('tableId');
+  });
 
-    // Check if the errors are for employeeId and tableId, no need to order it
-    const errorFields = errors.map((error) => error.property);
-    expect(errorFields).toContain('employeeId');
-    expect(errorFields).toContain('tableId');
-    expect(errorFields.length).toBe(2);
+  it('should be invalid with orderItems field', async () => {
+    dto.status = OrderStatus.PENDING;
+    dto.orderItems = [{ drinkId: 1, quantity: 2 }];
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('orderItems');
   });
 });

@@ -33,14 +33,6 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @ApiProperty({
-    description: 'ID của nhân viên tiếp nhận đơn hàng',
-    example: 1,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  employeeId: number;
-
-  @ApiProperty({
     description: 'ID của bàn',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })

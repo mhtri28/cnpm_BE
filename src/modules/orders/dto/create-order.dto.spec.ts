@@ -8,7 +8,6 @@ describe('CreateOrderDto', () => {
 
   beforeEach(() => {
     dto = new CreateOrderDto();
-    dto.employeeId = 1;
     dto.tableId = '550e8400-e29b-41d4-a716-446655440000';
     dto.orderItems = [{ drinkId: 1, quantity: 2 }];
   });
@@ -23,14 +22,6 @@ describe('CreateOrderDto', () => {
 
     const errors = await validate(dto);
     expect(errors.length).toBe(0);
-  });
-
-  it('should be invalid without employeeId', async () => {
-    (dto.employeeId as any) = undefined;
-
-    const errors = await validate(dto);
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].property).toBe('employeeId');
   });
 
   it('should be invalid without tableId', async () => {
@@ -59,7 +50,6 @@ describe('CreateOrderDto', () => {
 
   it('should transform plain objects', () => {
     const plainObject = {
-      employeeId: 1,
       tableId: '550e8400-e29b-41d4-a716-446655440000',
       status: OrderStatus.PENDING,
       orderItems: [{ drinkId: 1, quantity: 2 }],
