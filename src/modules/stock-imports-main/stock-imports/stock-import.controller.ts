@@ -39,6 +39,7 @@ export class StockImportController {
     description: 'Phiếu nhập kho đã được tạo thành công',
   })
   @Post()
+  @Roles(EmployeeRole.INVENTORY_MANAGER)
   @Roles(EmployeeRole.ADMIN)
   create(@Body() createStockImportDto: CreateStockImportDto) {
     return this.stockImportService.create(createStockImportDto);
@@ -51,6 +52,7 @@ export class StockImportController {
   })
   @Get()
   @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.INVENTORY_MANAGER)
   findAll() {
     return this.stockImportService.findAll();
   }
@@ -60,6 +62,7 @@ export class StockImportController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Get(':id')
   @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.INVENTORY_MANAGER)
   findOne(@Param('id') id: string) {
     return this.stockImportService.findOne(id);
   }
