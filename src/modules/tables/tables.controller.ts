@@ -67,7 +67,7 @@ export class TablesController {
 
   @Delete(':id')
   @Roles(EmployeeRole.ADMIN)
-  @ApiOperation({ summary: 'Xóa một bàn' })
+  @ApiOperation({ summary: 'Xóa bàn' })
   @ApiResponse({ status: 200, description: 'Xóa thành công' })
   @ApiBearerAuth()
   remove(@Param('id') id: string) {
