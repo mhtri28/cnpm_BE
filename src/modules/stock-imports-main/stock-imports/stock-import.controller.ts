@@ -25,7 +25,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-@ApiTags('stock-imports') 
+@ApiTags('stock-imports')
 @Controller('stock-imports')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, RoleGuard)

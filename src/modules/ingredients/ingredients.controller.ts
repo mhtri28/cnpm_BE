@@ -37,7 +37,7 @@ import { Ingredient } from './entities/ingredient.entity';
 export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
-  @Get('deleted')  // Add this before other GET routes
+  @Get('deleted') // Add this before other GET routes
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Lấy danh sách nguyên liệu đã xóa' })
   @ApiOkResponse({

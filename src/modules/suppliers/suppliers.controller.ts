@@ -42,7 +42,7 @@ export class SupplierController {
     return this.supplierService.create(createSupplierDto);
   }
 
-  @Get('deleted')  // Di chuyển route này lên trước các routes có param :id
+  @Get('deleted') // Di chuyển route này lên trước các routes có param :id
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Lấy danh sách nhà cung cấp đã xóa' })
@@ -61,7 +61,7 @@ export class SupplierController {
     return this.supplierService.findAll();
   }
 
-  @Get(':id')  // Các routes có param :id đặt sau
+  @Get(':id') // Các routes có param :id đặt sau
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {

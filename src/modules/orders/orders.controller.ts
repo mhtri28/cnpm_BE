@@ -27,10 +27,10 @@ import {
 import { Order } from './entities/order.entity';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
+import { CurrentUser } from '../../decorators/currentUser.decorator';
 
 @ApiTags('Đơn đặt')
 @Controller('orders')
-@UseGuards(AuthGuard, RoleGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -42,7 +42,6 @@ export class OrdersController {
     description: 'Đơn đặt đã được tạo thành công',
     type: Order,
   })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
   }
@@ -97,6 +96,7 @@ export class OrdersController {
     example: false,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findAll(
     @Query() filterDto: FilterOrdersDto,
@@ -111,6 +111,8 @@ export class OrdersController {
     description: 'Đơn đặt đã được tìm thấy',
     type: Order,
   })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
@@ -125,9 +127,14 @@ export class OrdersController {
     type: Order,
   })
   @ApiBearerAuth()
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.BARISTA)
+  update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.ordersService.update(id, updateOrderDto, currentUser);
   }
 
   @Delete(':id')
@@ -137,7 +144,8 @@ export class OrdersController {
     description: 'Đơn đặt đã được xóa thành công',
   })
   @ApiBearerAuth()
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.ordersService.remove(id);
   }

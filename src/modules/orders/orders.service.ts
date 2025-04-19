@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -15,15 +17,7 @@ import { TablesService } from '../tables/tables.service';
 import { EmployeesService } from '../employees/employees.service';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
-
-// Định nghĩa thứ tự ưu tiên cho các trạng thái đơn hàng
-// const ORDER_STATUS_PRIORITY = {
-//   [OrderStatus.PENDING]: 1,
-//   [OrderStatus.PAID]: 2,
-//   [OrderStatus.PREPARING]: 3,
-//   [OrderStatus.COMPLETED]: 4,
-//   [OrderStatus.CANCELED]: 5,
-// };
+import { FilterTableOrdersDto } from '../tables/dto/filter-table-orders.dto';
 
 @Injectable()
 export class OrdersService {
@@ -33,6 +27,7 @@ export class OrdersService {
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
     private readonly drinksService: DrinksService,
+    @Inject(forwardRef(() => TablesService))
     private readonly tablesService: TablesService,
     private readonly employeesService: EmployeesService,
     private readonly dataSource: DataSource,
@@ -47,16 +42,6 @@ export class OrdersService {
       );
     }
 
-    // Kiểm tra nhân viên có tồn tại không
-    const employee = await this.employeesService.findById(
-      createOrderDto.employeeId,
-    );
-    if (!employee) {
-      throw new NotFoundException(
-        `Không tìm thấy nhân viên với ID: ${createOrderDto.employeeId}`,
-      );
-    }
-
     // Tạo transaction để đảm bảo tính toàn vẹn dữ liệu
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -66,7 +51,7 @@ export class OrdersService {
       // Tạo đơn hàng mới
       const order = new Order();
       order.id = uuidv4();
-      order.employeeId = createOrderDto.employeeId;
+      order.employeeId = null; // Bắt đầu với employeeId là null
       order.tableId = createOrderDto.tableId;
       order.status = createOrderDto.status || OrderStatus.PENDING;
 
@@ -273,7 +258,11 @@ export class OrdersService {
     return order;
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async update(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+    currentUser: any,
+  ): Promise<Order> {
     const order = await this.findOne(id);
 
     if (!order) {
@@ -300,20 +289,32 @@ export class OrdersService {
       );
     }
 
-    // Reject updates with fields other than status
+    // Special handling for barista accepting an order (status changing from PAID to PREPARING)
     if (
-      updateOrderDto.employeeId ||
-      updateOrderDto.tableId ||
-      updateOrderDto.orderItems
+      order.status === OrderStatus.PAID &&
+      updateOrderDto.status === OrderStatus.PREPARING
     ) {
-      throw new BadRequestException(
-        'Chỉ cho phép cập nhật trạng thái đơn hàng. Không thể cập nhật các mục đơn hàng, nhân viên hoặc bàn.',
-      );
+      // Use the current authenticated user's ID (barista) for this order
+      if (!currentUser || !currentUser.id) {
+        throw new BadRequestException(
+          'Không tìm thấy thông tin người dùng đang đăng nhập.',
+        );
+      }
+
+      // Set the employeeId to the current barista's ID
+      order.employeeId = currentUser.id;
+      order.status = updateOrderDto.status;
+    }
+    // Case for only updating status (but not from PAID to PREPARING)
+    else if (updateOrderDto.status) {
+      order.status = updateOrderDto.status;
     }
 
-    // Update and save the order
-    if (updateOrderDto.status) {
-      order.status = updateOrderDto.status;
+    // Reject updates with fields other than status
+    if (updateOrderDto.tableId || updateOrderDto.orderItems) {
+      throw new BadRequestException(
+        'Không thể cập nhật các mục đơn hàng hoặc bàn.',
+      );
     }
 
     await this.orderRepository.save(order);
@@ -355,5 +356,113 @@ export class OrdersService {
       // Giải phóng queryRunner
       await queryRunner.release();
     }
+  }
+
+  async findOrdersByTable(
+    tableId: string,
+    filterDto?: FilterTableOrdersDto,
+  ): Promise<PaginationResult<Order>> {
+    const {
+      status,
+      sort,
+      page = 1,
+      limit = 10,
+      withCanceled = false,
+    } = filterDto || {};
+
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.employee', 'employee')
+      .leftJoinAndSelect('order.table', 'table')
+      .leftJoinAndSelect('order.payment', 'payment')
+      .leftJoinAndSelect('orderItems.drink', 'drink')
+      .where('order.tableId = :tableId', { tableId });
+
+    // Áp dụng các điều kiện lọc
+    if (status) {
+      queryBuilder.andWhere('order.status = :status', { status });
+    } else if (!withCanceled) {
+      // Nếu không có lọc trạng thái cụ thể và không yêu cầu đơn hàng đã hủy,
+      // loại bỏ tất cả đơn hàng có trạng thái CANCELED
+      queryBuilder.andWhere('order.status != :canceledStatus', {
+        canceledStatus: OrderStatus.CANCELED,
+      });
+    }
+
+    // Áp dụng sắp xếp
+    const sortParams = this.parseSortString(sort);
+
+    if (sortParams.length === 0) {
+      // Mặc định, sắp xếp theo status priority và sau đó theo createdAt
+      queryBuilder.addSelect(
+        `CASE
+        WHEN order.status = '${OrderStatus.PENDING}' THEN 1
+        WHEN order.status = '${OrderStatus.PAID}' THEN 2
+        WHEN order.status = '${OrderStatus.PREPARING}' THEN 3
+        WHEN order.status = '${OrderStatus.COMPLETED}' THEN 4
+        WHEN order.status = '${OrderStatus.CANCELED}' THEN 5
+        ELSE 6 END`,
+        'order_status_priority',
+      );
+      queryBuilder.orderBy('order_status_priority', 'ASC');
+      queryBuilder.addOrderBy('order.createdAt', 'DESC');
+    } else {
+      let isFirstSort = true;
+
+      for (const param of sortParams) {
+        const { field, direction } = param;
+
+        if (field === 'status') {
+          // Nếu sắp xếp theo trạng thái, sử dụng status priority
+          queryBuilder.addSelect(
+            `CASE
+            WHEN order.status = '${OrderStatus.PENDING}' THEN 1
+            WHEN order.status = '${OrderStatus.PAID}' THEN 2
+            WHEN order.status = '${OrderStatus.PREPARING}' THEN 3
+            WHEN order.status = '${OrderStatus.COMPLETED}' THEN 4
+            WHEN order.status = '${OrderStatus.CANCELED}' THEN 5
+            ELSE 6 END`,
+            'order_status_priority',
+          );
+
+          if (isFirstSort) {
+            queryBuilder.orderBy('order_status_priority', direction);
+            isFirstSort = false;
+          } else {
+            queryBuilder.addOrderBy('order_status_priority', direction);
+          }
+        } else {
+          // Sắp xếp bình thường cho các trường khác
+          if (isFirstSort) {
+            queryBuilder.orderBy(`order.${field}`, direction);
+            isFirstSort = false;
+          } else {
+            queryBuilder.addOrderBy(`order.${field}`, direction);
+          }
+        }
+      }
+    }
+
+    // Áp dụng phân trang
+    const skip = (page - 1) * limit;
+
+    // Lấy tổng số kết quả
+    const total = await queryBuilder.getCount();
+
+    // Lấy kết quả phân trang
+    const items = await queryBuilder.skip(skip).take(limit).getMany();
+
+    // Tính tổng số trang
+    const totalPages = Math.ceil(total / limit);
+
+    // Trả về kết quả phân trang
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 }

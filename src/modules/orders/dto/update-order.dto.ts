@@ -15,10 +15,7 @@ export class UpdateOrderDto {
   @IsNotEmpty()
   status: OrderStatus;
 
-  // These fields must be empty - they are not allowed in this DTO
-  @IsEmpty({ message: 'employeeId should not be provided in UpdateOrderDto' })
-  employeeId?: number;
-
+  // These fields must not be provided in this DTO
   @IsEmpty({ message: 'tableId should not be provided in UpdateOrderDto' })
   tableId?: string;
 
