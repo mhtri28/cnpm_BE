@@ -60,7 +60,7 @@ export class IngredientsController {
   }
 
   @Get()
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.INVENTORY_MANAGER)
   @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
   @ApiOkResponse({
     type: [Ingredient],
@@ -71,7 +71,7 @@ export class IngredientsController {
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.INVENTORY_MANAGER)
   @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
   @ApiOkResponse({
     type: Ingredient,
