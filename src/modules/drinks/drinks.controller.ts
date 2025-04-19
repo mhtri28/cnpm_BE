@@ -33,8 +33,8 @@ export class DrinksController {
   constructor(private readonly drinksService: DrinksService) {}
 
   @Post()
-  @Roles(EmployeeRole.ADMIN)
   @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Tạo đồ uống mới' })
   @ApiCreatedResponse({
     description: 'Đồ uống đã được tạo thành công',
@@ -61,6 +61,9 @@ export class DrinksController {
     description: 'Danh sách đồ uống đã bị xóa mềm',
     type: [Drink],
   })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findAllDeleted() {
     return this.drinksService.findAllDeleted();
   }
@@ -77,11 +80,11 @@ export class DrinksController {
   }
 
   @Post(':id/restore')
-  @Roles(EmployeeRole.ADMIN)
-  @UseGuards(AuthGuard, RoleGuard)
   @ApiOperation({ summary: 'Khôi phục đồ uống đã bị xóa mềm' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống cần khôi phục' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   @ApiOkResponse({
     description: 'Đồ uống đã được khôi phục thành công',
     type: Drink,
@@ -91,11 +94,11 @@ export class DrinksController {
   }
 
   @Patch(':id')
-  @Roles(EmployeeRole.ADMIN)
-  @UseGuards(AuthGuard, RoleGuard)
   @ApiOperation({ summary: 'Cập nhật thông tin đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   @ApiOkResponse({
     description: 'Đồ uống đã được cập nhật',
     type: Drink,
@@ -105,12 +108,12 @@ export class DrinksController {
   }
 
   @Delete(':id')
-  @Roles(EmployeeRole.ADMIN)
-  @UseGuards(AuthGuard, RoleGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Xóa đồ uống' })
   @ApiParam({ name: 'id', description: 'ID của đồ uống' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.drinksService.remove(+id);
   }
@@ -122,6 +125,9 @@ export class DrinksController {
     description: 'Danh sách công thức của đồ uống',
     type: [Drink],
   })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   getRecipes(@Param('id') id: string) {
     return this.drinksService.getRecipeByDrinkId(+id);
   }

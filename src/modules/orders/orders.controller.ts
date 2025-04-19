@@ -31,7 +31,6 @@ import { CurrentUser } from '../../decorators/currentUser.decorator';
 
 @ApiTags('Đơn đặt')
 @Controller('orders')
-@UseGuards(AuthGuard, RoleGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -97,6 +96,7 @@ export class OrdersController {
     example: false,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findAll(
     @Query() filterDto: FilterOrdersDto,
@@ -112,6 +112,7 @@ export class OrdersController {
     type: Order,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
@@ -126,6 +127,7 @@ export class OrdersController {
     type: Order,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.BARISTA)
   update(
     @Param('id') id: string,
@@ -142,7 +144,8 @@ export class OrdersController {
     description: 'Đơn đặt đã được xóa thành công',
   })
   @ApiBearerAuth()
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(EmployeeRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.ordersService.remove(id);
   }
