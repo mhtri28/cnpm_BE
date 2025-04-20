@@ -44,7 +44,6 @@ export class PaymentsController {
       // Tạo payment record với phương thức thanh toán từ DTO
       const payment = await this.paymentsService.createPayment(
         createPaymentDto.orderId,
-        createPaymentDto.totalAmount,
         createPaymentDto.method,
       );
 
