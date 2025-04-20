@@ -87,7 +87,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id VARCHAR(36) NOT NULL PRIMARY KEY,
-        employeeId BIGINT UNSIGNED NOT NULL,
+        employeeId BIGINT UNSIGNED NULL,
         tableId VARCHAR(36) NULL,
         status ENUM('pending', 'paid', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
