@@ -116,13 +116,6 @@ export class PaymentsService {
     try {
       const verifyResult = await this.vnpay.verifyReturnUrl(query);
 
-      if (!verifyResult.isSuccess) {
-        return {
-          success: false,
-          message: verifyResult.message || 'Xác thực thanh toán thất bại',
-        };
-      }
-
       // Lấy payment từ database dựa vào vnp_TxnRef (payment.id)
       const paymentId = query.vnp_TxnRef as string;
       const payment = await this.paymentRepository.findOne({
@@ -135,42 +128,53 @@ export class PaymentsService {
         );
       }
 
-      // Chỉ cập nhật trạng thái thanh toán và transactionId
-      const newStatus = verifyResult.isSuccess
-        ? PaymentStatus.COMPLETED
-        : PaymentStatus.FAILED;
-
-      // Trả về sớm nếu thanh toán đã hoàn thành
-      if (payment.status === PaymentStatus.COMPLETED) {
+      // Trả về sớm nếu thanh toán đã hoàn thành hoặc đã thất bại
+      if (
+        payment.status === PaymentStatus.COMPLETED ||
+        payment.status === PaymentStatus.FAILED
+      ) {
         return {
-          success: true,
+          success: payment.status === PaymentStatus.COMPLETED,
           payment,
-          message: 'Thanh toán đã được xử lý trước đó',
+          message:
+            payment.status === PaymentStatus.COMPLETED
+              ? 'Thanh toán đã được xử lý trước đó'
+              : 'Thanh toán đã bị hủy trước đó',
         };
       }
 
       // Cập nhật trạng thái thanh toán
-      payment.status = newStatus;
+      payment.status = verifyResult.isSuccess
+        ? PaymentStatus.COMPLETED
+        : PaymentStatus.FAILED;
       if (query.vnp_TransactionNo) {
         payment.transactionId = query.vnp_TransactionNo;
       }
       await this.paymentRepository.save(payment);
 
-      // Nếu thanh toán thành công, cập nhật trạng thái đơn hàng thành paid
-      if (verifyResult.isSuccess) {
-        const order = await this.orderRepository.findOne({
-          where: { id: payment.orderId },
-        });
-        if (order) {
-          order.status = 'paid' as any; // Cast to any để tránh lỗi TypeScript
-          await this.orderRepository.save(order);
+      // Lấy thông tin đơn hàng
+      const order = await this.orderRepository.findOne({
+        where: { id: payment.orderId },
+      });
+
+      if (order) {
+        // Cập nhật trạng thái đơn hàng dựa vào kết quả thanh toán
+        if (verifyResult.isSuccess) {
+          // Nếu thanh toán thành công, cập nhật trạng thái đơn hàng thành paid
+          order.status = 'paid' as any;
+        } else {
+          // Nếu thanh toán thất bại, cập nhật trạng thái đơn hàng thành canceled
+          order.status = 'canceled' as any;
         }
+        await this.orderRepository.save(order);
       }
 
       return {
-        success: true,
+        success: verifyResult.isSuccess,
         payment,
-        message: 'Thanh toán thành công',
+        message: verifyResult.isSuccess
+          ? 'Thanh toán thành công'
+          : verifyResult.message || 'Thanh toán thất bại',
       };
     } catch (error: any) {
       this.logger.error(
