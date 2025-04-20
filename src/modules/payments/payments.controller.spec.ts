@@ -42,17 +42,16 @@ describe('PaymentsController', () => {
   });
 
   describe('createPayment', () => {
-    it('should create a payment and return payment URL', async () => {
+    it('should create a payment and return payment URL for VNPAY', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        totalAmount: 100000,
         method: PaymentMethod.VNPAY,
       };
 
       const payment = new Payment();
       payment.id = 'test-uuid';
       payment.orderId = createPaymentDto.orderId;
-      payment.totalAmount = createPaymentDto.totalAmount;
+      payment.totalAmount = 100000; // This is now calculated from order items
       payment.method = PaymentMethod.VNPAY;
       payment.status = PaymentStatus.PENDING;
 
@@ -77,7 +76,7 @@ describe('PaymentsController', () => {
 
       expect(service.createPayment).toHaveBeenCalledWith(
         createPaymentDto.orderId,
-        createPaymentDto.totalAmount,
+        createPaymentDto.method,
       );
       expect(service.createPaymentUrl).toHaveBeenCalledWith(
         payment,
@@ -93,10 +92,53 @@ describe('PaymentsController', () => {
       });
     });
 
+    it('should create a payment and return success message for CASH', async () => {
+      const createPaymentDto: CreatePaymentDto = {
+        orderId: 'order-123',
+        method: PaymentMethod.CASH,
+      };
+
+      const payment = new Payment();
+      payment.id = 'test-uuid';
+      payment.orderId = createPaymentDto.orderId;
+      payment.totalAmount = 100000; // This is now calculated from order items
+      payment.method = PaymentMethod.CASH;
+      payment.status = PaymentStatus.COMPLETED;
+
+      jest.spyOn(service, 'createPayment').mockResolvedValue(payment);
+
+      const req = {
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        connection: { remoteAddress: null },
+        socket: { remoteAddress: null },
+        ip: null,
+      };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await controller.createPayment(createPaymentDto, req as any, res as any);
+
+      expect(service.createPayment).toHaveBeenCalledWith(
+        createPaymentDto.orderId,
+        createPaymentDto.method,
+      );
+      expect(service.createPaymentUrl).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: {
+          payment,
+          message: 'Thanh toán tiền mặt đã được ghi nhận',
+        },
+      });
+    });
+
     it('should handle errors during payment creation', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        totalAmount: 100000,
         method: PaymentMethod.VNPAY,
       };
 
@@ -127,7 +169,6 @@ describe('PaymentsController', () => {
     it('should handle non-existent order error', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'non-existent-order',
-        totalAmount: 100000,
         method: PaymentMethod.VNPAY,
       };
 
@@ -161,7 +202,6 @@ describe('PaymentsController', () => {
     it('should handle duplicate payment error', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-with-payment',
-        totalAmount: 100000,
         method: PaymentMethod.VNPAY,
       };
 

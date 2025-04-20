@@ -33,12 +33,12 @@ export class PaymentsService {
 
   async createPayment(
     orderId: string,
-    amount: number,
     method: PaymentMethod = PaymentMethod.VNPAY,
   ): Promise<Payment> {
     // Kiểm tra order có tồn tại không
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
+      relations: ['orderItems'],
     });
 
     if (!order) {
@@ -54,10 +54,20 @@ export class PaymentsService {
       throw new Error(`Đơn hàng với ID ${orderId} đã có thanh toán liên kết`);
     }
 
+    // Tính tổng tiền từ orderItems
+    let totalAmount = 0;
+    if (order.orderItems && order.orderItems.length > 0) {
+      totalAmount = order.orderItems.reduce((sum, item) => {
+        return sum + parseFloat(item.subTotal.toString());
+      }, 0);
+    } else {
+      throw new Error(`Đơn hàng với ID ${orderId} không có sản phẩm nào`);
+    }
+
     const payment = new Payment();
     payment.id = uuidv4();
     payment.orderId = orderId;
-    payment.totalAmount = amount;
+    payment.totalAmount = totalAmount;
     payment.method = method;
     payment.status = PaymentStatus.PENDING;
     payment.transactionId = null;
@@ -67,10 +77,8 @@ export class PaymentsService {
       payment.status = PaymentStatus.COMPLETED;
 
       // Cập nhật trạng thái đơn hàng thành paid
-      if (order) {
-        order.status = 'paid' as any;
-        await this.orderRepository.save(order);
-      }
+      order.status = 'paid' as any;
+      await this.orderRepository.save(order);
     }
 
     return this.paymentRepository.save(payment);
@@ -81,7 +89,7 @@ export class PaymentsService {
 
     try {
       const url = await this.vnpay.buildPaymentUrl({
-        vnp_Amount: payment.totalAmount * 100, // VNPay yêu cầu số tiền * 100 (VNĐ * 100)
+        vnp_Amount: payment.totalAmount, // VNPay library already multiplies by 100 internally
         vnp_IpAddr: ipAddress,
         vnp_TxnRef: payment.id, // Sử dụng payment.id để làm mã tham chiếu
         vnp_OrderInfo: `Thanh toan don hang ${payment.orderId}`,

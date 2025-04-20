@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsEnum, IsUUID } from 'class-validator';
+import { IsString, IsEnum, IsUUID } from 'class-validator';
 import { PaymentMethod } from '../entities/payment.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -10,13 +10,6 @@ export class CreatePaymentDto {
   @IsUUID()
   @IsString()
   orderId: string;
-
-  @ApiProperty({
-    description: 'Tổng số tiền thanh toán',
-    example: 29000,
-  })
-  @IsNumber()
-  totalAmount: number;
 
   @ApiProperty({
     description: 'Phương thức thanh toán',

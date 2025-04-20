@@ -101,19 +101,27 @@ describe('PaymentsService', () => {
   describe('createPayment', () => {
     it('should create a payment record when order exists and has no payment', async () => {
       const orderId = 'order-123';
-      const amount = 100000;
       const order = new Order();
       order.id = orderId;
+      order.orderItems = [
+        {
+          subTotal: '50000.00',
+        },
+        {
+          subTotal: '50000.00',
+        },
+      ] as any; // Using 'as any' for simplicity in tests
 
-      // Mock order exists
+      // Mock order exists with orderItems
       jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
       // Mock no existing payment for order
       jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(null);
 
-      const result = await service.createPayment(orderId, amount);
+      const result = await service.createPayment(orderId, PaymentMethod.VNPAY);
 
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: { id: orderId },
+        relations: ['orderItems'],
       });
       expect(paymentRepository.findOne).toHaveBeenCalledWith({
         where: { orderId },
@@ -121,31 +129,55 @@ describe('PaymentsService', () => {
       expect(paymentRepository.save).toHaveBeenCalled();
       expect(result.id).toBe('test-uuid');
       expect(result.orderId).toBe(orderId);
-      expect(result.totalAmount).toBe(amount);
+      expect(result.totalAmount).toBe(100000); // Sum of subTotals
       expect(result.method).toBe(PaymentMethod.VNPAY);
       expect(result.status).toBe(PaymentStatus.PENDING);
     });
 
+    it('should set status to COMPLETED and update order status for cash payments', async () => {
+      const orderId = 'order-123';
+      const order = new Order();
+      order.id = orderId;
+      order.orderItems = [
+        {
+          subTotal: '50000.00',
+        },
+      ] as any;
+
+      // Mock order exists
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
+      // Mock no existing payment for order
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(null);
+      // Mock order save
+      jest.spyOn(orderRepository, 'save').mockResolvedValue(order);
+
+      const result = await service.createPayment(orderId, PaymentMethod.CASH);
+
+      expect(result.status).toBe(PaymentStatus.COMPLETED);
+      expect(order.status).toBe('paid');
+      expect(orderRepository.save).toHaveBeenCalled();
+    });
+
     it('should throw NotFoundException when order does not exist', async () => {
       const orderId = 'non-existent-order';
-      const amount = 100000;
 
       // Mock order does not exist
       jest.spyOn(orderRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.createPayment(orderId, amount)).rejects.toThrow(
+      await expect(service.createPayment(orderId)).rejects.toThrow(
         NotFoundException,
       );
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: { id: orderId },
+        relations: ['orderItems'],
       });
     });
 
     it('should throw Error when order already has a payment', async () => {
       const orderId = 'order-with-payment';
-      const amount = 100000;
       const order = new Order();
       order.id = orderId;
+      order.orderItems = [] as any;
 
       const existingPayment = new Payment();
       existingPayment.orderId = orderId;
@@ -157,15 +189,32 @@ describe('PaymentsService', () => {
         .spyOn(paymentRepository, 'findOne')
         .mockResolvedValue(existingPayment);
 
-      await expect(service.createPayment(orderId, amount)).rejects.toThrow(
+      await expect(service.createPayment(orderId)).rejects.toThrow(
         `Đơn hàng với ID ${orderId} đã có thanh toán liên kết`,
       );
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: { id: orderId },
+        relations: ['orderItems'],
       });
       expect(paymentRepository.findOne).toHaveBeenCalledWith({
         where: { orderId },
       });
+    });
+
+    it('should throw Error when order has no items', async () => {
+      const orderId = 'order-with-no-items';
+      const order = new Order();
+      order.id = orderId;
+      order.orderItems = [] as any;
+
+      // Mock order exists but no items
+      jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
+      // Mock no existing payment for order
+      jest.spyOn(paymentRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(service.createPayment(orderId)).rejects.toThrow(
+        `Đơn hàng với ID ${orderId} không có sản phẩm nào`,
+      );
     });
   });
 
