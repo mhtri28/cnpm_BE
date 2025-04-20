@@ -1,11 +1,5 @@
-import {
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  IsUUID,
-} from 'class-validator';
-import { PaymentMethod, PaymentStatus } from '../entities/payment.entity';
+import { IsString, IsNumber, IsEnum, IsUUID } from 'class-validator';
+import { PaymentMethod } from '../entities/payment.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePaymentDto {
@@ -30,12 +24,4 @@ export class CreatePaymentDto {
   })
   @IsEnum(PaymentMethod)
   method: PaymentMethod;
-
-  @ApiProperty({
-    description: 'Trạng thái thanh toán',
-    example: 'pending',
-  })
-  @IsEnum(PaymentStatus)
-  @IsOptional()
-  status?: PaymentStatus;
 }

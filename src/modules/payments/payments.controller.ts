@@ -21,6 +21,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { PaymentMethod } from './entities/payment.entity';
 
 @ApiTags('Thanh toán')
 @Controller('payments')
@@ -40,12 +41,25 @@ export class PaymentsController {
     @Res() res: Response,
   ) {
     try {
-      // Tạo payment record
+      // Tạo payment record với phương thức thanh toán từ DTO
       const payment = await this.paymentsService.createPayment(
         createPaymentDto.orderId,
         createPaymentDto.totalAmount,
+        createPaymentDto.method,
       );
 
+      // Nếu là thanh toán tiền mặt, trả về thông tin thanh toán ngay
+      if (createPaymentDto.method === PaymentMethod.CASH) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            payment,
+            message: 'Thanh toán tiền mặt đã được ghi nhận',
+          },
+        });
+      }
+
+      // Nếu là thanh toán VNPay, tạo URL thanh toán
       // Lấy địa chỉ IP của người dùng
       const ipAddress =
         req.headers['x-forwarded-for'] ||

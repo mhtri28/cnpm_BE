@@ -31,7 +31,11 @@ export class PaymentsService {
     });
   }
 
-  async createPayment(orderId: string, amount: number): Promise<Payment> {
+  async createPayment(
+    orderId: string,
+    amount: number,
+    method: PaymentMethod = PaymentMethod.VNPAY,
+  ): Promise<Payment> {
     // Kiểm tra order có tồn tại không
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
@@ -54,9 +58,20 @@ export class PaymentsService {
     payment.id = uuidv4();
     payment.orderId = orderId;
     payment.totalAmount = amount;
-    payment.method = PaymentMethod.VNPAY;
+    payment.method = method;
     payment.status = PaymentStatus.PENDING;
     payment.transactionId = null;
+
+    // Nếu là thanh toán tiền mặt, cập nhật trạng thái thành COMPLETED
+    if (method === PaymentMethod.CASH) {
+      payment.status = PaymentStatus.COMPLETED;
+
+      // Cập nhật trạng thái đơn hàng thành paid
+      if (order) {
+        order.status = 'paid' as any;
+        await this.orderRepository.save(order);
+      }
+    }
 
     return this.paymentRepository.save(payment);
   }
