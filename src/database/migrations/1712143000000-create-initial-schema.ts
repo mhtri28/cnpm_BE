@@ -100,7 +100,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     // Order items table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS order_items (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
         orderId VARCHAR(36) NOT NULL,
         drinkId BIGINT UNSIGNED NOT NULL,
         priceAtOrder DECIMAL(8, 2) NOT NULL,
