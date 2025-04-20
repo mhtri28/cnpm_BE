@@ -8,6 +8,7 @@ import {
   UseGuards,
   Query,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -24,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
 import { CurrentUser } from '../../decorators/currentUser.decorator';
@@ -111,15 +112,54 @@ export class OrdersController {
     description: 'Đơn đặt đã được tìm thấy',
     type: Order,
   })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
 
+  @Patch(':id/customer')
+  @ApiOperation({
+    summary: 'Cập nhật đơn đặt (cho khách hàng)',
+    description:
+      'Endpoint này cho phép khách hàng cập nhật đơn hàng khi ở trạng thái PENDING sang PAID hoặc CANCELED.',
+  })
+  @ApiBody({ type: UpdateOrderDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Đơn đặt đã được cập nhật thành công',
+    type: Order,
+  })
+  async updateByCustomer(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    const order = await this.ordersService.findOne(id);
+
+    // Chỉ cho phép khách hàng cập nhật đơn từ PENDING -> PAID hoặc CANCELED
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(
+        `Không thể cập nhật đơn hàng. Đơn hàng không ở trạng thái chờ thanh toán.`,
+      );
+    }
+
+    // Chỉ cho phép cập nhật sang trạng thái PAID hoặc CANCELED
+    if (
+      updateOrderDto.status !== OrderStatus.PAID &&
+      updateOrderDto.status !== OrderStatus.CANCELED
+    ) {
+      throw new BadRequestException(
+        `Bạn chỉ có thể thanh toán (PAID) hoặc hủy (CANCELED) đơn hàng.`,
+      );
+    }
+
+    return this.ordersService.update(id, updateOrderDto, null);
+  }
+
   @Patch(':id')
-  @ApiOperation({ summary: 'Cập nhật đơn đặt' })
+  @ApiOperation({
+    summary: 'Cập nhật đơn đặt (cho nhân viên)',
+    description:
+      'Endpoint này yêu cầu xác thực và quyền hạn, dành cho nhân viên cập nhật đơn hàng sau khi đã thanh toán.',
+  })
   @ApiBody({ type: UpdateOrderDto })
   @ApiResponse({
     status: 200,
@@ -128,7 +168,7 @@ export class OrdersController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.BARISTA)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   update(
     @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto,
