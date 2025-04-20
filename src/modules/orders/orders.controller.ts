@@ -143,7 +143,9 @@ export class OrdersController {
 
     // Chỉ cho phép cập nhật sang trạng thái PAID hoặc CANCELED
     if (updateOrderDto.status !== OrderStatus.CANCELED) {
-      throw new BadRequestException(`Bạn chỉ có thể hủy (CANCELED) đơn hàng.`);
+      throw new BadRequestException(
+        `Trạng thái không hợp lệ. Bạn chỉ có thể cập nhật đơn hàng sang trạng thái CANCELED (hủy đơn).`,
+      );
     }
 
     return this.ordersService.update(id, updateOrderDto, null);
