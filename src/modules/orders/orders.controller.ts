@@ -120,7 +120,7 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Cập nhật đơn đặt (cho khách hàng)',
     description:
-      'Endpoint này cho phép khách hàng cập nhật đơn hàng khi ở trạng thái PENDING sang PAID hoặc CANCELED.',
+      'Endpoint này cho phép khách hàng cập nhật đơn hàng khi ở trạng thái PENDING sang CANCELED (hủy đơn).',
   })
   @ApiBody({ type: UpdateOrderDto })
   @ApiResponse({
@@ -134,7 +134,7 @@ export class OrdersController {
   ) {
     const order = await this.ordersService.findOne(id);
 
-    // Chỉ cho phép khách hàng cập nhật đơn từ PENDING -> PAID hoặc CANCELED
+    // Chỉ cho phép khách hàng cập nhật đơn từ PENDING -> hoặc CANCELED
     if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
         `Không thể cập nhật đơn hàng. Đơn hàng không ở trạng thái chờ thanh toán.`,
@@ -142,13 +142,8 @@ export class OrdersController {
     }
 
     // Chỉ cho phép cập nhật sang trạng thái PAID hoặc CANCELED
-    if (
-      updateOrderDto.status !== OrderStatus.PAID &&
-      updateOrderDto.status !== OrderStatus.CANCELED
-    ) {
-      throw new BadRequestException(
-        `Bạn chỉ có thể thanh toán (PAID) hoặc hủy (CANCELED) đơn hàng.`,
-      );
+    if (updateOrderDto.status !== OrderStatus.CANCELED) {
+      throw new BadRequestException(`Bạn chỉ có thể hủy (CANCELED) đơn hàng.`);
     }
 
     return this.ordersService.update(id, updateOrderDto, null);
