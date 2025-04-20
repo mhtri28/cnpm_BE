@@ -366,6 +366,47 @@ export class OrdersService {
       );
     }
 
+    // Kiểm tra trình tự chuyển đổi trạng thái hợp lệ
+    if (updateOrderDto.status) {
+      switch (order.status) {
+        case OrderStatus.PENDING:
+          // Từ PENDING chỉ có thể chuyển sang PAID hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.PAID &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.PAID} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        case OrderStatus.PAID:
+          // Từ PAID chỉ có thể chuyển sang PREPARING hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.PREPARING &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.PREPARING} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        case OrderStatus.PREPARING:
+          // Từ PREPARING chỉ có thể chuyển sang COMPLETED hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.COMPLETED &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.COMPLETED} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
     // Special handling for barista accepting an order (status changing from PAID to PREPARING)
     if (
       order.status === OrderStatus.PAID &&
