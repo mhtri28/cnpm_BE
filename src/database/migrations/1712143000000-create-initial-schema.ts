@@ -116,7 +116,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS payments (
         id VARCHAR(36) NOT NULL PRIMARY KEY,
         orderId VARCHAR(36) NOT NULL,
-        transactionId BIGINT NOT NULL,
+        transactionId BIGINT NULL,
         totalAmount DECIMAL(8, 2) NOT NULL,
         method ENUM('cash','vnpay') NOT NULL,
         status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
