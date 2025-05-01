@@ -107,12 +107,12 @@ export class PaymentsController {
       if (result.success && result.payment) {
         // Chuyển hướng về trang thành công
         return res.redirect(
-          `/payment-success?orderId=${result.payment.orderId}`,
+          `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-success?orderId=${result.payment.orderId}`,
         );
       } else {
         // Chuyển hướng về trang thất bại
         return res.redirect(
-          `/payment-failed?message=${encodeURIComponent(result.message)}`,
+          `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent(result.message)}`,
         );
       }
     } catch (error: any) {
@@ -121,7 +121,7 @@ export class PaymentsController {
         error.stack,
       );
       return res.redirect(
-        `/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
       );
     }
   }

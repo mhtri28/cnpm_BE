@@ -256,7 +256,7 @@ describe('PaymentsController', () => {
 
       expect(service.handleVnpayReturn).toHaveBeenCalledWith(query);
       expect(res.redirect).toHaveBeenCalledWith(
-        '/payment-success?orderId=order-123',
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-success?orderId=order-123`,
       );
     });
 
@@ -277,7 +277,7 @@ describe('PaymentsController', () => {
 
       expect(service.handleVnpayReturn).toHaveBeenCalledWith(query);
       expect(res.redirect).toHaveBeenCalledWith(
-        '/payment-failed?message=Thanh%20to%C3%A1n%20th%E1%BA%A5t%20b%E1%BA%A1i',
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=Thanh%20to%C3%A1n%20th%E1%BA%A5t%20b%E1%BA%A1i`,
       );
     });
 
@@ -294,7 +294,7 @@ describe('PaymentsController', () => {
       await controller.handleVnpayReturn(query, res as any);
 
       expect(res.redirect).toHaveBeenCalledWith(
-        '/payment-failed?message=%C4%90%C3%A3%20x%E1%BA%A3y%20ra%20l%E1%BB%97i%20khi%20x%E1%BB%AD%20l%C3%BD%20thanh%20to%C3%A1n',
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=%C4%90%C3%A3%20x%E1%BA%A3y%20ra%20l%E1%BB%97i%20khi%20x%E1%BB%AD%20l%C3%BD%20thanh%20to%C3%A1n`,
       );
     });
   });
