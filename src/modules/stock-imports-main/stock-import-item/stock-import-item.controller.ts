@@ -39,7 +39,7 @@ export class StockImportItemController {
   ) {}
 
   @Post()
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator
   @ApiOperation({ summary: 'Tạo chi tiết phiếu nhập kho mới' })
   @ApiCreatedResponse({
     type: StockImportItem,
@@ -50,8 +50,7 @@ export class StockImportItemController {
   }
 
   @Get()
-  @Roles(EmployeeRole.ADMIN)
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator
   @ApiOperation({ summary: 'Lấy tất cả chi tiết phiếu nhập kho' })
   @ApiOkResponse({
     type: [StockImportItem],
@@ -62,8 +61,7 @@ export class StockImportItemController {
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.ADMIN)
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
   @ApiOperation({ summary: 'Lấy thông tin chi tiết phiếu nhập kho theo ID' })
   @ApiOkResponse({
     type: StockImportItem,
@@ -78,8 +76,7 @@ export class StockImportItemController {
   }
 
   @Put(':id')
-  @Roles(EmployeeRole.ADMIN)
-  @Roles(EmployeeRole.INVENTORY_MANAGER)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
   @ApiOperation({ summary: 'Cập nhật thông tin chi tiết phiếu nhập kho' })
   @ApiOkResponse({
     type: StockImportItem,
