@@ -49,7 +49,7 @@ export class IngredientsController {
   }
 
   @Post()
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)
   @ApiOperation({ summary: 'Tạo nguyên liệu mới' })
   @ApiCreatedResponse({
     type: Ingredient,
@@ -60,7 +60,7 @@ export class IngredientsController {
   }
 
   @Get()
-  @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN)  // Combine roles in one decorator
+  @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator
   @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
   @ApiOkResponse({
     type: [Ingredient],
@@ -71,7 +71,7 @@ export class IngredientsController {
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)  // Combine roles in one decorator
+  @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator
   @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
   @ApiOkResponse({
     type: Ingredient,
