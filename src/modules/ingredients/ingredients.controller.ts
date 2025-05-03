@@ -60,7 +60,7 @@ export class IngredientsController {
   }
 
   @Get()
-  @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN)  // Combine roles in one decorator
+  @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN) // Combine roles in one decorator
   @ApiOperation({ summary: 'Lấy tất cả nguyên liệu' })
   @ApiOkResponse({
     type: [Ingredient],
@@ -71,7 +71,7 @@ export class IngredientsController {
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)  // Combine roles in one decorator
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA) // Combine roles in one decorator
   @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
   @ApiOkResponse({
     type: Ingredient,
