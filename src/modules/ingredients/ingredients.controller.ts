@@ -72,6 +72,7 @@ export class IngredientsController {
 
   @Get(':id')
   @Roles(EmployeeRole.BARISTA, EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator
+
   @ApiOperation({ summary: 'Lấy thông tin nguyên liệu theo ID' })
   @ApiOkResponse({
     type: Ingredient,

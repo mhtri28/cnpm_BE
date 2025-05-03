@@ -34,7 +34,7 @@ export class StockImportController {
   constructor(private readonly stockImportService: StockImportService) {}
 
   @ApiOperation({ summary: 'Tạo phiếu nhập kho mới' })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER) // Combine roles in one decorator)
   @ApiResponse({
     status: 201,
     description: 'Phiếu nhập kho đã được tạo thành công',
@@ -45,7 +45,7 @@ export class StockImportController {
   }
 
   @ApiOperation({ summary: 'Lấy tất cả phiếu nhập kho' })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER) // Combine roles in one decorator)
   @ApiResponse({
     status: 200,
     description: 'Trả về danh sách tất cả phiếu nhập kho',
@@ -56,7 +56,7 @@ export class StockImportController {
   }
 
   @ApiOperation({ summary: 'Lấy thông tin phiếu nhập kho theo ID' })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER) // Combine roles in one decorator)
   @ApiResponse({ status: 200, description: 'Trả về thông tin phiếu nhập kho' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Get(':id')
@@ -65,7 +65,7 @@ export class StockImportController {
   }
 
   @ApiOperation({ summary: 'Cập nhật thông tin phiếu nhập kho' })
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER)  // Combine roles in one decorator)
+  @Roles(EmployeeRole.ADMIN, EmployeeRole.INVENTORY_MANAGER) // Combine roles in one decorator)
   @ApiResponse({
     status: 200,
     description: 'Thông tin phiếu nhập kho đã được cập nhật',
@@ -80,7 +80,7 @@ export class StockImportController {
   }
 
   @ApiOperation({ summary: 'Xóa phiếu nhập kho' })
-  @Roles(EmployeeRole.ADMIN) 
+  @Roles(EmployeeRole.ADMIN)
   @ApiResponse({ status: 200, description: 'Phiếu nhập kho đã được xóa mềm' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy phiếu nhập kho' })
   @Delete(':id')
