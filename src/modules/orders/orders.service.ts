@@ -18,6 +18,8 @@ import { EmployeesService } from '../employees/employees.service';
 import { FilterOrdersDto, OrderSort } from './dto/filter/filter-orders.dto';
 import { PaginationResult } from './dto/filter/pagination-result.interface';
 import { FilterTableOrdersDto } from '../tables/dto/filter-table-orders.dto';
+import { Recipe } from '../recipes/entities/recipe.entity';
+import { Ingredient } from '../ingredients/entities/ingredient.entity';
 
 @Injectable()
 export class OrdersService {
@@ -26,6 +28,10 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(Recipe)
+    private readonly recipeRepository: Repository<Recipe>,
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
     private readonly drinksService: DrinksService,
     @Inject(forwardRef(() => TablesService))
     private readonly tablesService: TablesService,
@@ -48,6 +54,66 @@ export class OrdersService {
     await queryRunner.startTransaction();
 
     try {
+      // Kiểm tra các đồ uống tồn tại và nguyên liệu đủ
+      const ingredientUsage = new Map<number, number>(); // Map để theo dõi lượng nguyên liệu cần dùng
+
+      for (const item of createOrderDto.orderItems) {
+        const drink = await this.drinksService.findOne(item.drinkId);
+        if (!drink) {
+          throw new NotFoundException(
+            `Không tìm thấy đồ uống với ID: ${item.drinkId}`,
+          );
+        }
+
+        // Lấy các công thức của đồ uống
+        const recipes = await this.recipeRepository.find({
+          where: { drinkId: item.drinkId },
+          relations: ['ingredient'],
+        });
+
+        if (recipes.length === 0) {
+          throw new BadRequestException(
+            `Đồ uống với ID: ${item.drinkId} chưa có công thức.`,
+          );
+        }
+
+        // Tính toán lượng nguyên liệu cần cho mỗi đồ uống dựa vào số lượng
+        recipes.forEach((recipe) => {
+          const requiredAmount =
+            parseFloat(recipe.quantity.toString()) * item.quantity;
+          const ingredientId = recipe.ingredientId;
+
+          // Cập nhật Map theo dõi lượng nguyên liệu cần dùng
+          if (ingredientUsage.has(ingredientId)) {
+            ingredientUsage.set(
+              ingredientId,
+              (ingredientUsage.get(ingredientId) || 0) + requiredAmount,
+            );
+          } else {
+            ingredientUsage.set(ingredientId, requiredAmount);
+          }
+        });
+      }
+
+      // Kiểm tra xem có đủ nguyên liệu không
+      const ingredientIds = Array.from(ingredientUsage.keys());
+      const ingredients =
+        await this.ingredientRepository.findByIds(ingredientIds);
+
+      // Kiểm tra từng nguyên liệu
+      for (const ingredient of ingredients) {
+        const requiredAmount = ingredientUsage.get(ingredient.id) || 0;
+        const availableAmount = parseFloat(
+          ingredient.availableCount.toString(),
+        );
+
+        if (availableAmount < requiredAmount) {
+          throw new BadRequestException(
+            `Không đủ nguyên liệu ${ingredient.name}. Còn lại: ${availableAmount} ${ingredient.unit}, cần: ${requiredAmount} ${ingredient.unit}.`,
+          );
+        }
+      }
+
       // Tạo đơn hàng mới
       const order = new Order();
       order.id = uuidv4();
@@ -62,11 +128,6 @@ export class OrdersService {
       const orderItems = await Promise.all(
         createOrderDto.orderItems.map(async (item) => {
           const drink = await this.drinksService.findOne(item.drinkId);
-          if (!drink) {
-            throw new NotFoundException(
-              `Không tìm thấy đồ uống với ID: ${item.drinkId}`,
-            );
-          }
 
           // Tạo mục đơn hàng
           const orderItem = new OrderItem();
@@ -84,6 +145,20 @@ export class OrdersService {
       // Lưu các mục đơn hàng
       await queryRunner.manager.save(orderItems);
 
+      // Cập nhật số lượng nguyên liệu còn lại
+      for (const [ingredientId, usedAmount] of ingredientUsage.entries()) {
+        const ingredient = ingredients.find((i) => i.id === ingredientId);
+        if (ingredient) {
+          const newAmount =
+            parseFloat(ingredient.availableCount.toString()) - usedAmount;
+          await queryRunner.manager.update(
+            Ingredient,
+            { id: ingredientId },
+            { availableCount: newAmount },
+          );
+        }
+      }
+
       // Commit transaction
       await queryRunner.commitTransaction();
 
@@ -92,7 +167,9 @@ export class OrdersService {
     } catch (error) {
       // Rollback transaction nếu có lỗi
       await queryRunner.rollbackTransaction();
-      throw error;
+      throw new BadRequestException(
+        error.message || 'Lỗi cơ sở dữ liệu. Vui lòng thử lại sau.',
+      );
     } finally {
       // Giải phóng queryRunner
       await queryRunner.release();
@@ -287,6 +364,47 @@ export class OrdersService {
       throw new BadRequestException(
         `Trạng thái đơn hàng không hợp lệ: ${updateOrderDto.status}`,
       );
+    }
+
+    // Kiểm tra trình tự chuyển đổi trạng thái hợp lệ
+    if (updateOrderDto.status) {
+      switch (order.status) {
+        case OrderStatus.PENDING:
+          // Từ PENDING chỉ có thể chuyển sang PAID hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.PAID &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.PAID} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        case OrderStatus.PAID:
+          // Từ PAID chỉ có thể chuyển sang PREPARING hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.PREPARING &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.PREPARING} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        case OrderStatus.PREPARING:
+          // Từ PREPARING chỉ có thể chuyển sang COMPLETED hoặc CANCELED
+          if (
+            updateOrderDto.status !== OrderStatus.COMPLETED &&
+            updateOrderDto.status !== OrderStatus.CANCELED
+          ) {
+            throw new BadRequestException(
+              `Không thể chuyển từ trạng thái ${order.status} sang ${updateOrderDto.status}. Chỉ có thể chuyển sang ${OrderStatus.COMPLETED} hoặc ${OrderStatus.CANCELED}.`,
+            );
+          }
+          break;
+        default:
+          break;
+      }
     }
 
     // Special handling for barista accepting an order (status changing from PAID to PREPARING)

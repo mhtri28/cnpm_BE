@@ -21,6 +21,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { PaymentMethod } from './entities/payment.entity';
 
 @ApiTags('Thanh toán')
 @Controller('payments')
@@ -40,12 +41,24 @@ export class PaymentsController {
     @Res() res: Response,
   ) {
     try {
-      // Tạo payment record
+      // Tạo payment record với phương thức thanh toán từ DTO
       const payment = await this.paymentsService.createPayment(
         createPaymentDto.orderId,
-        createPaymentDto.totalAmount,
+        createPaymentDto.method,
       );
 
+      // Nếu là thanh toán tiền mặt, trả về thông tin thanh toán ngay
+      if (createPaymentDto.method === PaymentMethod.CASH) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            payment,
+            message: 'Thanh toán tiền mặt đã được ghi nhận',
+          },
+        });
+      }
+
+      // Nếu là thanh toán VNPay, tạo URL thanh toán
       // Lấy địa chỉ IP của người dùng
       const ipAddress =
         req.headers['x-forwarded-for'] ||
@@ -94,12 +107,12 @@ export class PaymentsController {
       if (result.success && result.payment) {
         // Chuyển hướng về trang thành công
         return res.redirect(
-          `/payment-success?orderId=${result.payment.orderId}`,
+          `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-success?orderId=${result.payment.orderId}`,
         );
       } else {
         // Chuyển hướng về trang thất bại
         return res.redirect(
-          `/payment-failed?message=${encodeURIComponent(result.message)}`,
+          `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent(result.message)}`,
         );
       }
     } catch (error: any) {
@@ -108,7 +121,7 @@ export class PaymentsController {
         error.stack,
       );
       return res.redirect(
-        `/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
       );
     }
   }

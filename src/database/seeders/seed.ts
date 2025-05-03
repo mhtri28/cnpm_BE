@@ -692,6 +692,7 @@ async function seed() {
 
       // Tạo chi tiết đơn hàng
       await orderItemRepository.save({
+        id: uuidv4(),
         orderId: order.id,
         drinkId: randomDrink.id,
         priceAtOrder: randomDrink.price,

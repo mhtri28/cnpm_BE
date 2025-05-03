@@ -87,7 +87,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id VARCHAR(36) NOT NULL PRIMARY KEY,
-        employeeId BIGINT UNSIGNED NOT NULL,
+        employeeId BIGINT UNSIGNED NULL,
         tableId VARCHAR(36) NULL,
         status ENUM('pending', 'paid', 'preparing', 'completed', 'canceled') NOT NULL DEFAULT 'pending',
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -100,7 +100,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
     // Order items table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS order_items (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
         orderId VARCHAR(36) NOT NULL,
         drinkId BIGINT UNSIGNED NOT NULL,
         priceAtOrder DECIMAL(8, 2) NOT NULL,
@@ -116,7 +116,7 @@ export class CreateInitialSchema1712143000000 implements MigrationInterface {
       CREATE TABLE IF NOT EXISTS payments (
         id VARCHAR(36) NOT NULL PRIMARY KEY,
         orderId VARCHAR(36) NOT NULL,
-        transactionId BIGINT NOT NULL,
+        transactionId BIGINT NULL,
         totalAmount DECIMAL(8, 2) NOT NULL,
         method ENUM('cash','vnpay') NOT NULL,
         status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',

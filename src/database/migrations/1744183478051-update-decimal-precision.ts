@@ -131,10 +131,10 @@ export class UpdateDecimalPrecision1744183478051 implements MigrationInterface {
       `ALTER TABLE \`ingredients\` ADD \`deletedAt\` datetime(6) NULL`,
     );
     await queryRunner.query(
-      `ALTER TABLE \`stock_import_items\` CHANGE \`subTotal\` \`subTotal\` decimal(10,2) NOT NULL`,
+      `ALTER TABLE \`stock_import_items\` CHANGE \`subTotal\` \`subTotal\` decimal(13,2) NOT NULL`,
     );
     await queryRunner.query(
-      `ALTER TABLE \`stock_imports\` CHANGE \`totalCost\` \`totalCost\` decimal(12,2) NOT NULL`,
+      `ALTER TABLE \`stock_imports\` CHANGE \`totalCost\` \`totalCost\` decimal(15,2) NOT NULL`,
     );
     await queryRunner.query(
       `ALTER TABLE \`stock_imports\` DROP COLUMN \`createdAt\``,
@@ -404,10 +404,10 @@ export class UpdateDecimalPrecision1744183478051 implements MigrationInterface {
       `ALTER TABLE \`stock_imports\` ADD \`createdAt\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP`,
     );
     await queryRunner.query(
-      `ALTER TABLE \`stock_imports\` CHANGE \`totalCost\` \`totalCost\` decimal(8,2) NOT NULL`,
+      `ALTER TABLE \`stock_imports\` CHANGE \`totalCost\` \`totalCost\` decimal(15,2) NOT NULL`,
     );
     await queryRunner.query(
-      `ALTER TABLE \`stock_import_items\` CHANGE \`subTotal\` \`subTotal\` decimal(8,2) NOT NULL`,
+      `ALTER TABLE \`stock_import_items\` CHANGE \`subTotal\` \`subTotal\` decimal(13,2) NOT NULL`,
     );
     await queryRunner.query(
       `ALTER TABLE \`ingredients\` DROP COLUMN \`deletedAt\``,
