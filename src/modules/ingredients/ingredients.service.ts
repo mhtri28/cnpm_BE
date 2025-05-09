@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm'; // Add IsNull import
 import { Ingredient } from './entities/ingredient.entity';
@@ -22,7 +26,9 @@ export class IngredientsService {
       where: { name },
     });
     if (existingIngredient) {
-      throw new ConflictException(`Ingredient with name "${name}" already exists`);
+      throw new ConflictException(
+        `Ingredient with name "${name}" already exists`,
+      );
     }
 
     const supplier = await this.supplierRepo.findOne({
@@ -85,7 +91,9 @@ export class IngredientsService {
         where: { name, id: Not(id) },
       });
       if (existingIngredient) {
-        throw new ConflictException(`Ingredient with name "${name}" already exists`);
+        throw new ConflictException(
+          `Ingredient with name "${name}" already exists`,
+        );
       }
       ingredient.name = name;
     }
