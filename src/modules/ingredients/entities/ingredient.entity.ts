@@ -27,7 +27,7 @@ export class Ingredient {
     description: 'Tên nguyên liệu',
     example: 'Coffee Beans',
   })
-  @Column({ length: 50 })
+  @Column({ length: 50, unique: true })
   name: string;
 
   @ApiProperty({
