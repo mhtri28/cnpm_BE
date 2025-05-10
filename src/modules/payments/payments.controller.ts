@@ -121,7 +121,7 @@ export class PaymentsController {
         error.stack,
       );
       return res.redirect(
-       `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
+        `${process.env.PAYMENT_RESULT_REDIRECT_PREFIX_URL}/payment-failed?message=${encodeURIComponent('Đã xảy ra lỗi khi xử lý thanh toán')}`,
       );
     }
   }
