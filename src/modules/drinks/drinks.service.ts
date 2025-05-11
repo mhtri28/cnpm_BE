@@ -150,15 +150,15 @@ export class DrinksService {
         where: { name: updateData.name },
         withDeleted: true,
       });
-    
+
       if (duplicateDrink) {
         if (duplicateDrink.deletedAt) {
           throw new ConflictException(
-            `Drink with name '${updateData.name}' exists but was deleted. You can restore it instead.`
+            `Drink with name '${updateData.name}' exists but was deleted. You can restore it instead.`,
           );
         } else {
           throw new ConflictException(
-            `Drink with name '${updateData.name}' already exists. Please choose a different name.`
+            `Drink with name '${updateData.name}' already exists. Please choose a different name.`,
           );
         }
       }
@@ -172,7 +172,7 @@ export class DrinksService {
     try {
       // 1. Cập nhật thông tin drink
       const drink = await this.findOne(id);
-      Object.assign(drink, updateData);  // Changed from drinkData to updateData
+      Object.assign(drink, updateData); // Changed from drinkData to updateData
       await queryRunner.manager.save(drink);
 
       // 2. Nếu có cập nhật recipe
