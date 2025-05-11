@@ -132,18 +132,35 @@ export class DrinksService {
   }
 
   async update(id: number, updateDrinkDto: UpdateDrinkDto): Promise<Drink> {
-    const { recipe, ...drinkData } = updateDrinkDto;
+    const { recipe, ...updateData } = updateDrinkDto;
 
-    // Kiểm tra xem tên đồ uống đã tồn tại chưa (nếu có cập nhật tên)
-    if (drinkData.name) {
-      const existingDrink = await this.drinksRepository.findOne({
-        where: { name: drinkData.name },
+    // Find the existing drink first
+    const existingDrink = await this.drinksRepository.findOne({
+      where: { id },
+      relations: ['recipes'],
+    });
+
+    if (!existingDrink) {
+      throw new NotFoundException(`Drink with ID ${id} not found`);
+    }
+
+    // Only check for duplicate names if the name is being updated and it's different
+    if (updateData.name && updateData.name !== existingDrink.name) {
+      const duplicateDrink = await this.drinksRepository.findOne({
+        where: { name: updateData.name },
+        withDeleted: true,
       });
-
-      if (existingDrink && existingDrink.id !== id) {
-        throw new ConflictException(
-          `Đồ uống với tên '${drinkData.name}' đã tồn tại. Vui lòng chọn tên khác.`,
-        );
+    
+      if (duplicateDrink) {
+        if (duplicateDrink.deletedAt) {
+          throw new ConflictException(
+            `Drink with name '${updateData.name}' exists but was deleted. You can restore it instead.`
+          );
+        } else {
+          throw new ConflictException(
+            `Drink with name '${updateData.name}' already exists. Please choose a different name.`
+          );
+        }
       }
     }
 
@@ -155,7 +172,7 @@ export class DrinksService {
     try {
       // 1. Cập nhật thông tin drink
       const drink = await this.findOne(id);
-      Object.assign(drink, drinkData);
+      Object.assign(drink, updateData);  // Changed from drinkData to updateData
       await queryRunner.manager.save(drink);
 
       // 2. Nếu có cập nhật recipe
