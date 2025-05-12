@@ -37,7 +37,7 @@ export class SupplierController {
 
   @Post()
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)
   create(@Body() createSupplierDto: CreateSupplierDto) {
     return this.supplierService.create(createSupplierDto);
   }
@@ -56,14 +56,14 @@ export class SupplierController {
 
   @Get()
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)
   findAll() {
     return this.supplierService.findAll();
   }
 
   @Get(':id') // Các routes có param :id đặt sau
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(EmployeeRole.ADMIN)
+  @Roles(EmployeeRole.ADMIN,EmployeeRole.INVENTORY_MANAGER)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.supplierService.findById(id);
   }
