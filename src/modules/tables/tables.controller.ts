@@ -24,12 +24,11 @@ import {
 
 @ApiTags('Bàn')
 @Controller('tables')
-@UseGuards(AuthGuard, RoleGuard)
-@ApiBearerAuth()
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
 
   @Post()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Tạo mới bàn' })
   @ApiResponse({ status: 201, description: 'Tạo mới thành công' })
@@ -39,6 +38,7 @@ export class TablesController {
   }
 
   @Get()
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   @ApiOperation({ summary: 'Lấy danh sách tất cả các bàn' })
   @ApiResponse({ status: 200, description: 'Lấy danh sách thành công' })
@@ -48,7 +48,6 @@ export class TablesController {
   }
 
   @Get(':id')
-  @Roles(EmployeeRole.ADMIN, EmployeeRole.BARISTA)
   @ApiOperation({ summary: 'Lấy thông tin chi tiết của một bàn' })
   @ApiResponse({ status: 200, description: 'Lấy thông tin thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy bàn' })
@@ -57,6 +56,7 @@ export class TablesController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Cập nhật thông tin bàn' })
   @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
@@ -66,6 +66,7 @@ export class TablesController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles(EmployeeRole.ADMIN)
   @ApiOperation({ summary: 'Xóa bàn' })
   @ApiResponse({ status: 200, description: 'Xóa thành công' })
