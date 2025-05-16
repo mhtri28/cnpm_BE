@@ -131,4 +131,22 @@ export class DrinksController {
   getRecipes(@Param('id') id: string) {
     return this.drinksService.getRecipeByDrinkId(+id);
   }
+
+  @Get(':id/available-quantity')
+  @ApiOperation({ summary: 'Lấy số lượng có thể pha chế của một đồ uống' })
+  @ApiParam({ name: 'id', description: 'ID của đồ uống' })
+  @ApiOkResponse({
+    description: 'Số lượng có thể pha chế',
+    schema: {
+      type: 'object',
+      properties: {
+        drinkId: { type: 'number' },
+        drinkName: { type: 'string' },
+        availableQuantity: { type: 'number' },
+      },
+    },
+  })
+  getAvailableQuantity(@Param('id') id: string) {
+    return this.drinksService.getAvailableQuantity(+id);
+  }
 }

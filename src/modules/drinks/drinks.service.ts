@@ -297,4 +297,40 @@ export class DrinksService {
     // Trả về đồ uống đã khôi phục
     return this.findOne(id);
   }
+
+  async getAvailableQuantity(id: number): Promise<{
+    drinkId: number;
+    drinkName: string;
+    availableQuantity: number;
+  }> {
+    // Get the drink with its recipes and ingredients
+    const drink = await this.drinksRepository.findOne({
+      where: { id },
+      relations: ['recipes', 'recipes.ingredient'],
+    });
+
+    if (!drink) {
+      throw new NotFoundException(`Không tìm thấy đồ uống với ID ${id}`);
+    }
+
+    let minAvailableQuantity = Infinity;
+
+    // Calculate how many drinks can be made based on each ingredient
+    for (const recipe of drink.recipes) {
+      const ingredient = recipe.ingredient;
+      if (ingredient.availableCount && recipe.quantity) {
+        const possibleDrinks = Math.floor(ingredient.availableCount / recipe.quantity);
+        minAvailableQuantity = Math.min(minAvailableQuantity, possibleDrinks);
+      } else {
+        minAvailableQuantity = 0;
+        break;
+      }
+    }
+
+    return {
+      drinkId: drink.id,
+      drinkName: drink.name,
+      availableQuantity: minAvailableQuantity === Infinity ? 0 : minAvailableQuantity,
+    };
+  }
 }
