@@ -137,45 +137,54 @@ export class DrinksService {
     // Find the existing drink first
     const existingDrink = await this.drinksRepository.findOne({
       where: { id },
-      relations: ['recipes'],
+      relations: ['recipes', 'recipes.ingredient'],
     });
-
+  
     if (!existingDrink) {
       throw new NotFoundException(`Drink with ID ${id} not found`);
     }
-
-    // Only check for duplicate names if the name is being updated and it's different
-    if (updateData.name && updateData.name !== existingDrink.name) {
-      const duplicateDrink = await this.drinksRepository.findOne({
-        where: { name: updateData.name },
-        withDeleted: true,
-      });
-
-      if (duplicateDrink) {
-        if (duplicateDrink.deletedAt) {
+  
+    // Calculate soldCount difference if it's being updated
+    const soldCountIncrease = (updateData as any).soldCount
+      ? (updateData as any).soldCount - existingDrink.soldCount
+      : 0;
+  
+    // Only proceed with ingredient updates if soldCount has increased
+    if (soldCountIncrease > 0) {
+      // Check if we have enough ingredients
+      for (const recipe of existingDrink.recipes) {
+        const requiredQuantity = recipe.quantity * soldCountIncrease;
+        if (recipe.ingredient.availableCount < requiredQuantity) {
           throw new ConflictException(
-            `Drink with name '${updateData.name}' exists but was deleted. You can restore it instead.`,
-          );
-        } else {
-          throw new ConflictException(
-            `Drink with name '${updateData.name}' already exists. Please choose a different name.`,
+            `Không đủ nguyên liệu ${recipe.ingredient.name} để cập nhật. Cần thêm ${
+              requiredQuantity - recipe.ingredient.availableCount
+            } ${recipe.ingredient.unit}`,
           );
         }
       }
     }
-
-    // Tạo transaction để đảm bảo tính toàn vẹn dữ liệu
+  
+    // Start transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+  
     try {
-      // 1. Cập nhật thông tin drink
+      // Update drink information
       const drink = await this.findOne(id);
-      Object.assign(drink, updateData); // Changed from drinkData to updateData
+      Object.assign(drink, updateData);
       await queryRunner.manager.save(drink);
-
-      // 2. Nếu có cập nhật recipe
+  
+      // Update ingredient quantities if soldCount increased
+      if (soldCountIncrease > 0) {
+        for (const recipe of existingDrink.recipes) {
+          const ingredient = recipe.ingredient;
+          ingredient.availableCount -= recipe.quantity * soldCountIncrease;
+          await queryRunner.manager.save(ingredient);
+        }
+      }
+  
+      // Update recipe if provided
       if (recipe && recipe.length > 0) {
         // Kiểm tra các nguyên liệu tồn tại
         for (const recipeItem of recipe) {
