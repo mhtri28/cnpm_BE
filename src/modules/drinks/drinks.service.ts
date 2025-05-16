@@ -139,16 +139,16 @@ export class DrinksService {
       where: { id },
       relations: ['recipes', 'recipes.ingredient'],
     });
-  
+
     if (!existingDrink) {
       throw new NotFoundException(`Drink with ID ${id} not found`);
     }
-  
+
     // Calculate soldCount difference if it's being updated
     const soldCountIncrease = (updateData as any).soldCount
       ? (updateData as any).soldCount - existingDrink.soldCount
       : 0;
-  
+
     // Only proceed with ingredient updates if soldCount has increased
     if (soldCountIncrease > 0) {
       // Check if we have enough ingredients
@@ -163,18 +163,18 @@ export class DrinksService {
         }
       }
     }
-  
+
     // Start transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-  
+
     try {
       // Update drink information
       const drink = await this.findOne(id);
       Object.assign(drink, updateData);
       await queryRunner.manager.save(drink);
-  
+
       // Update ingredient quantities if soldCount increased
       if (soldCountIncrease > 0) {
         for (const recipe of existingDrink.recipes) {
@@ -183,7 +183,7 @@ export class DrinksService {
           await queryRunner.manager.save(ingredient);
         }
       }
-  
+
       // Update recipe if provided
       if (recipe && recipe.length > 0) {
         // Kiểm tra các nguyên liệu tồn tại
