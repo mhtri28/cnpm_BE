@@ -201,91 +201,91 @@ async function seed() {
     // Create drinks with explicit column names
     const americano = await drinkRepository.save({
       name: 'Americano',
-      image_url: fakeImageUrl,
+      image_url: 'https://www.thespruceeats.com/thmb/XUYpKtgCFv8dOkzA0vDIroWu6Bs=/3089x2060/filters:fill(auto,1)/85153452-56a176765f9b58b7d0bf84dd.jpg',
       price: 35000,
       soldCount: 0,
     });
 
     const latte = await drinkRepository.save({
       name: 'Cafe Latte',
-      image_url: fakeImageUrl,
+      image_url: 'https://tse3.mm.bing.net/th/id/OIP.smcR0io__Ne1B6JFjfWPhwHaLH?rs=1&pid=ImgDetMain',
       price: 45000,
       soldCount: 0,
     });
 
     const cappuccino = await drinkRepository.save({
       name: 'Cappuccino',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.da39668e8d00c9a6895755ebdad865ec?rik=pgjutCTYQ9I95w&pid=ImgRaw&r=0',
       price: 48000,
       soldCount: 0,
     });
 
     const espresso = await drinkRepository.save({
       name: 'Espresso',
-      image_url: fakeImageUrl,
+      image_url: 'https://www.tasteofhome.com/wp-content/uploads/2023/03/TOH-espresso-GettyImages-1291298315-JVcrop.jpg',
       price: 30000,
       soldCount: 0,
     });
 
     const mocha = await drinkRepository.save({
       name: 'Cafe Mocha',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.54d9dc601c99e0cd83ba5c0cafd98dfb?rik=PtuNPqmENN2tyg&riu=http%3a%2f%2fwww.folgerscoffee.com%2ffolgers%2frecipes%2f_Hero+Images%2fDetail+Pages%2f6330%2fimage-thumb__6330__schema_image%2fCafeMocha-hero.61028a28.jpg&ehk=xAEc5kLat5',
       price: 50000,
       soldCount: 0,
     });
 
     const blackTea = await drinkRepository.save({
       name: 'Black Tea',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.e6c6dc2e38801bbfa422ea42b50c4f81?rik=bXSu5lRHzOOsLw&pid=ImgRaw&r=0',
       price: 32000,
       soldCount: 0,
     });
 
     const greenTeaLatte = await drinkRepository.save({
       name: 'Green Tea Latte',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.a0924cfec145be652100986521ff4901?rik=h8aim3a1ZkR1wA&pid=ImgRaw&r=0',
       price: 45000,
       soldCount: 0,
     });
 
     const hotChocolate = await drinkRepository.save({
       name: 'Hot Chocolate',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.0ee6f115032435cc5439522763845b16?rik=HrwotZOSPmfmsg&pid=ImgRaw&r=0',
       price: 42000,
       soldCount: 0,
     });
 
     const vanillaLatte = await drinkRepository.save({
       name: 'Vanilla Latte',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.0ee6f115032435cc5439522763845b16?rik=HrwotZOSPmfmsg&pid=ImgRaw&r=0',
       price: 50000,
       soldCount: 0,
     });
 
     const caramelMacchiato = await drinkRepository.save({
       name: 'Caramel Macchiato',
-      image_url: fakeImageUrl,
+      image_url: 'https://tse1.mm.bing.net/th/id/OIP.-onsxiz4Fk4u4QLnKmIUKgHaLH?rs=1&pid=ImgDetMain',
       price: 55000,
       soldCount: 0,
     });
 
     const icedCoffee = await drinkRepository.save({
       name: 'Iced Coffee',
-      image_url: fakeImageUrl,
+      image_url: 'https://www.windingcreekranch.org/wp-content/uploads/2022/05/Homemade-iced-coffee-1200-1200.jpg',
       price: 38000,
       soldCount: 0,
     });
 
     const lemonTea = await drinkRepository.save({
       name: 'Lemon Tea',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.59b3e29ac3647f048b93abc4f2a186db?rik=RZIcYRexu6Okeg&pid=ImgRaw&r=0',
       price: 35000,
       soldCount: 0,
     });
 
     const mintMojito = await drinkRepository.save({
       name: 'Mint Mojito Coffee',
-      image_url: fakeImageUrl,
+      image_url: 'https://th.bing.com/th/id/R.6412df81f688572a723ef2b8e0034e7c?rik=GuEAOKAQDDwtig&pid=ImgRaw&r=0',
       price: 52000,
       soldCount: 0,
     });
