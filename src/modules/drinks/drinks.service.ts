@@ -319,7 +319,9 @@ export class DrinksService {
     for (const recipe of drink.recipes) {
       const ingredient = recipe.ingredient;
       if (ingredient.availableCount && recipe.quantity) {
-        const possibleDrinks = Math.floor(ingredient.availableCount / recipe.quantity);
+        const possibleDrinks = Math.floor(
+          ingredient.availableCount / recipe.quantity,
+        );
         minAvailableQuantity = Math.min(minAvailableQuantity, possibleDrinks);
       } else {
         minAvailableQuantity = 0;
@@ -330,7 +332,8 @@ export class DrinksService {
     return {
       drinkId: drink.id,
       drinkName: drink.name,
-      availableQuantity: minAvailableQuantity === Infinity ? 0 : minAvailableQuantity,
+      availableQuantity:
+        minAvailableQuantity === Infinity ? 0 : minAvailableQuantity,
     };
   }
 }
