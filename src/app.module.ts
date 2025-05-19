@@ -56,7 +56,7 @@ config();
         StockImportItem,
         Table,
       ],
-      synchronize: false,
+      synchronize: true,
       logging: true,
     }),
     SupplierModule,
