@@ -93,14 +93,12 @@ export class PaymentsService {
 
       // Format date to yyyyMMddHHmmss
       const formatDate = (date: Date) => {
-        return parseInt(
-          date.getFullYear().toString() +
+        return date.getFullYear().toString() +
           (date.getMonth() + 1).toString().padStart(2, '0') +
           date.getDate().toString().padStart(2, '0') +
           date.getHours().toString().padStart(2, '0') +
           date.getMinutes().toString().padStart(2, '0') +
-          date.getSeconds().toString().padStart(2, '0')
-        );
+          date.getSeconds().toString().padStart(2, '0');
       };
 
       // Convert amount to smallest currency unit (multiply by 100)
@@ -117,6 +115,9 @@ export class PaymentsService {
         vnp_CreateDate: formatDate(now),
         vnp_CurrCode: 'VND' as any,
         vnp_ExpireDate: formatDate(expireDate),
+        vnp_Version: '2.1.0',
+        vnp_Command: 'pay',
+        vnp_TmnCode: this.configService.get<string>('vnpay.tmnCode'),
       } as any);
 
       return url;
@@ -147,6 +148,19 @@ export class PaymentsService {
         throw new NotFoundException(
           `Không tìm thấy thông tin thanh toán với ID: ${paymentId}`,
         );
+      }
+
+      // Kiểm tra số tiền
+      const vnpAmount = parseInt(query.vnp_Amount as string) / 100; // VNPay trả về số tiền * 100
+      if (vnpAmount !== payment.totalAmount) {
+        this.logger.error(
+          `Số tiền không khớp: VNPay=${vnpAmount}, DB=${payment.totalAmount}`,
+        );
+        return {
+          success: false,
+          payment,
+          message: 'Số tiền thanh toán không hợp lệ',
+        };
       }
 
       // Trả về sớm nếu thanh toán đã hoàn thành hoặc đã thất bại
