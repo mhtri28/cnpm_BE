@@ -8,10 +8,13 @@ import { SqlExceptionsFilter } from './filters/sql-exceptions.filter';
 // Load .env file
 config();
 
+// Set timezone to Asia/Ho_Chi_Minh
+process.env.TZ = 'Asia/Ho_Chi_Minh';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-app.getHttpAdapter().getInstance().set('trust proxy', true);
+  app.getHttpAdapter().getInstance().set('trust proxy', true);
   // Thêm global prefix cho API v1
   app.setGlobalPrefix('api/v1');
 
