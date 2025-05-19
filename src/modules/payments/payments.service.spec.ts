@@ -225,7 +225,7 @@ describe('PaymentsService', () => {
       payment.orderId = 'order-123';
       payment.totalAmount = 100000;
 
-      const ipAddress = '127.0.0.1';
+      const ipAddress = '52.41.36.82';
 
       const result = await service.createPaymentUrl(payment, ipAddress);
 
