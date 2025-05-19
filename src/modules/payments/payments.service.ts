@@ -88,15 +88,36 @@ export class PaymentsService {
     const returnUrl = this.configService.get<string>('vnpay.returnUrl');
 
     try {
+      const now = new Date();
+      const expireDate = new Date(now.getTime() + 15 * 60000); // 15 minutes from now
+
+      // Format date to yyyyMMddHHmmss
+      const formatDate = (date: Date) => {
+        return parseInt(
+          date.getFullYear().toString() +
+          (date.getMonth() + 1).toString().padStart(2, '0') +
+          date.getDate().toString().padStart(2, '0') +
+          date.getHours().toString().padStart(2, '0') +
+          date.getMinutes().toString().padStart(2, '0') +
+          date.getSeconds().toString().padStart(2, '0')
+        );
+      };
+
+      // Convert amount to smallest currency unit (multiply by 100)
+      const amount = Math.round(payment.totalAmount * 100);
+
       const url = await this.vnpay.buildPaymentUrl({
-        vnp_Amount: payment.totalAmount, // VNPay library already multiplies by 100 internally
+        vnp_Amount: amount,
         vnp_IpAddr: ipAddress,
-        vnp_TxnRef: payment.id, // Sử dụng payment.id để làm mã tham chiếu
+        vnp_TxnRef: payment.id,
         vnp_OrderInfo: `Thanh toan don hang ${payment.orderId}`,
         vnp_OrderType: ProductCode.Other,
         vnp_ReturnUrl: returnUrl || '',
         vnp_Locale: VnpLocale.VN,
-      });
+        vnp_CreateDate: formatDate(now),
+        vnp_CurrCode: 'VND' as any,
+        vnp_ExpireDate: formatDate(expireDate),
+      } as any);
 
       return url;
     } catch (error: any) {
