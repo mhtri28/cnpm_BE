@@ -102,15 +102,21 @@ export class PaymentsController {
   @Get('vnpay-return')
   async handleVnpayReturn(@Query() query: any, @Res() res: Response) {
     try {
+      // Add amount validation before processing
+      if (!query.vnp_Amount || isNaN(Number(query.vnp_Amount))) {
+        this.logger.error('Invalid payment amount received from VNPay');
+        return res.redirect(
+          `https://fontendcnpm.vercel.app/payment-failed?message=${encodeURIComponent('Số tiền thanh toán không hợp lệ')}`,
+        );
+      }
+
       const result = await this.paymentsService.handleVnpayReturn(query);
 
       if (result.success && result.payment) {
-        // Chuyển hướng về trang thành công
         return res.redirect(
           `https://fontendcnpm.vercel.app/payment-success?orderId=${result.payment.orderId}`,
         );
       } else {
-        // Chuyển hướng về trang thất bại
         return res.redirect(
           `https://fontendcnpm.vercel.app/payment-failed?message=${encodeURIComponent(result.message)}`,
         );
