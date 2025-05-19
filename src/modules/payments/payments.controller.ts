@@ -102,26 +102,41 @@ export class PaymentsController {
   @Get('vnpay-return')
   async handleVnpayReturn(@Query() query: any, @Res() res: Response) {
     try {
+      console.log('VNPay Return Query Parameters:', query);
+      console.log('VNPay Amount:', query.vnp_Amount);
+      
       // Add amount validation before processing
       if (!query.vnp_Amount || isNaN(Number(query.vnp_Amount))) {
+        console.log('Invalid Amount Details:', {
+          amount: query.vnp_Amount,
+          isNumber: !isNaN(Number(query.vnp_Amount))
+        });
         this.logger.error('Invalid payment amount received from VNPay');
         return res.redirect(
           `https://fontendcnpm.vercel.app/payment-failed?message=${encodeURIComponent('Số tiền thanh toán không hợp lệ')}`,
         );
       }
-
+  
+      console.log('Processing payment with amount:', Number(query.vnp_Amount));
       const result = await this.paymentsService.handleVnpayReturn(query);
-
+      console.log('VNPay Return Result:', result);
+  
       if (result.success && result.payment) {
+        console.log('Payment successful:', result.payment);
         return res.redirect(
           `https://fontendcnpm.vercel.app/payment-success?orderId=${result.payment.orderId}`,
         );
       } else {
+        console.log('Payment failed:', result.message);
         return res.redirect(
           `https://fontendcnpm.vercel.app/payment-failed?message=${encodeURIComponent(result.message)}`,
         );
       }
     } catch (error: any) {
+      console.error('VNPay Return Error:', {
+        message: error.message,
+        stack: error.stack
+      });
       this.logger.error(
         `Lỗi khi xử lý VNPay return: ${error.message}`,
         error.stack,
@@ -139,9 +154,21 @@ export class PaymentsController {
   @Get('vnpay-ipn')
   async handleVnpayIpn(@Query() query: any, @Res() res: Response) {
     try {
+      console.log('VNPay IPN Query Parameters:', query);
+      console.log('VNPay IPN Amount:', query.vnp_Amount);
+      console.log('VNPay IPN Transaction Status:', query.vnp_TransactionStatus);
+      
       const result = await this.paymentsService.handleVnpayIpn(query);
+      console.log('VNPay IPN Processing Result:', result);
+      
       return res.status(200).json(result);
     } catch (error: any) {
+      console.error('VNPay IPN Error:', {
+        message: error.message,
+        stack: error.stack,
+        query: query
+      });
+      
       this.logger.error(
         `Lỗi khi xử lý VNPay IPN: ${error.message}`,
         error.stack,
