@@ -11,6 +11,7 @@ config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+app.getHttpAdapter().getInstance().set('trust proxy', true);
   // Thêm global prefix cho API v1
   app.setGlobalPrefix('api/v1');
 
