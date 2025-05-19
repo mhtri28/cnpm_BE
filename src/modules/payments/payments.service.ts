@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { VNPay, VnpLocale, ProductCode } from 'vnpay';
 import { Order } from '../orders/entities/order.entity';
-import crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 @Injectable()
 export class PaymentsService {
