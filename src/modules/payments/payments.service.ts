@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { VNPay, VnpLocale, ProductCode } from 'vnpay';
 import { Order } from '../orders/entities/order.entity';
+import crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
@@ -86,6 +87,8 @@ export class PaymentsService {
 
   async createPaymentUrl(payment: Payment, ipAddress: string): Promise<string> {
     const returnUrl = this.configService.get<string>('vnpay.returnUrl');
+    const tmnCode = this.configService.get<string>('vnpay.tmnCode');
+    const secureSecret = this.configService.get<string>('vnpay.secureSecret');
 
     try {
       const now = new Date();
@@ -108,7 +111,7 @@ export class PaymentsService {
       const clientIp = ipAddress.split(',')[0].trim();
 
       this.logger.debug('VNPay Configuration:', {
-        tmnCode: this.configService.get<string>('vnpay.tmnCode'),
+        tmnCode,
         returnUrl,
         testMode: this.configService.get<boolean>('vnpay.testMode'),
         amount,
@@ -117,21 +120,42 @@ export class PaymentsService {
         clientIp,
       });
 
-      const url = await this.vnpay.buildPaymentUrl({
-        vnp_Amount: amount,
-        vnp_IpAddr: clientIp,
-        vnp_TxnRef: payment.id,
-        vnp_OrderInfo: `Thanh toan don hang ${payment.orderId}`,
-        vnp_OrderType: ProductCode.Other,
-        vnp_ReturnUrl: returnUrl || '',
-        vnp_Locale: VnpLocale.VN,
-        vnp_CreateDate: formatDate(now),
-        vnp_CurrCode: 'VND' as any,
-        vnp_ExpireDate: formatDate(expireDate),
-        vnp_Version: '2.1.0',
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        vnp_Amount: amount.toString(),
         vnp_Command: 'pay',
-        vnp_TmnCode: this.configService.get<string>('vnpay.tmnCode'),
-      } as any);
+        vnp_CreateDate: formatDate(now),
+        vnp_CurrCode: 'VND',
+        vnp_ExpireDate: formatDate(expireDate),
+        vnp_IpAddr: clientIp,
+        vnp_Locale: 'vn',
+        vnp_OrderInfo: `Thanh toan don hang ${payment.orderId}`,
+        vnp_OrderType: 'other',
+        vnp_ReturnUrl: returnUrl || '',
+        vnp_TmnCode: tmnCode || '',
+        vnp_TxnRef: payment.id,
+        vnp_Version: '2.1.0',
+      });
+
+      // Sort parameters alphabetically
+      const sortedParams = new URLSearchParams();
+      Array.from(queryParams.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .forEach(([key, value]) => {
+          sortedParams.append(key, value);
+        });
+
+      // Create secure hash
+      const signData = sortedParams.toString();
+      const hmac = crypto.createHmac('sha512', secureSecret || '');
+      const secureHash = hmac.update(signData).digest('hex');
+
+      // Add secure hash to parameters
+      sortedParams.append('vnp_SecureHash', secureHash);
+
+      // Build final URL
+      const baseUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+      const url = `${baseUrl}?${sortedParams.toString()}`;
 
       this.logger.debug('Generated VNPay URL:', url);
 
