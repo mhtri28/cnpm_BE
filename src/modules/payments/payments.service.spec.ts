@@ -76,7 +76,7 @@ describe('PaymentsService', () => {
                 'vnpay.vnpayHost':
                   'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
                 'vnpay.returnUrl':
-                  'http://localhost:3000/api/v1/payments/vnpay-return',
+                  'https://cnpm-be-vagn.onrender.com/api/v1/payments/vnpay-return',
                 'vnpay.testMode': true,
               };
               return config[key];
