@@ -104,6 +104,9 @@ export class PaymentsService {
       // Convert amount to smallest currency unit (multiply by 100)
       const amount = Math.round(payment.totalAmount * 100);
 
+      // Get first IP address if multiple are provided
+      const clientIp = ipAddress.split(',')[0].trim();
+
       this.logger.debug('VNPay Configuration:', {
         tmnCode: this.configService.get<string>('vnpay.tmnCode'),
         returnUrl,
@@ -111,11 +114,12 @@ export class PaymentsService {
         amount,
         paymentId: payment.id,
         orderId: payment.orderId,
+        clientIp,
       });
 
       const url = await this.vnpay.buildPaymentUrl({
         vnp_Amount: amount,
-        vnp_IpAddr: ipAddress,
+        vnp_IpAddr: clientIp,
         vnp_TxnRef: payment.id,
         vnp_OrderInfo: `Thanh toan don hang ${payment.orderId}`,
         vnp_OrderType: ProductCode.Other,
