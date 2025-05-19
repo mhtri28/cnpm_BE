@@ -203,15 +203,19 @@ export class PaymentsService {
 
       // Kiểm tra số tiền
       const vnpAmount = parseInt(query.vnp_Amount as string) / 100; // VNPay trả về số tiền * 100
+      const dbAmount = parseFloat(payment.totalAmount.toString());
+
       this.logger.debug('Amount comparison:', {
         vnpAmount,
-        dbAmount: payment.totalAmount,
-        rawVnpAmount: query.vnp_Amount
+        dbAmount,
+        rawVnpAmount: query.vnp_Amount,
+        rawDbAmount: payment.totalAmount
       });
 
-      if (vnpAmount !== payment.totalAmount) {
+      // So sánh số tiền với sai số cho phép (0.01)
+      if (Math.abs(vnpAmount - dbAmount) > 0.01) {
         this.logger.error(
-          `Số tiền không khớp: VNPay=${vnpAmount}, DB=${payment.totalAmount}`,
+          `Số tiền không khớp: VNPay=${vnpAmount}, DB=${dbAmount}`,
         );
         return {
           success: false,
