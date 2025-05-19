@@ -61,7 +61,7 @@ describe('PaymentsController', () => {
       jest.spyOn(service, 'createPaymentUrl').mockResolvedValue(paymentUrl);
 
       const req = {
-        headers: { 'x-forwarded-for': '52.41.36.82' },
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         connection: { remoteAddress: null },
         socket: { remoteAddress: null },
         ip: null,
@@ -80,7 +80,7 @@ describe('PaymentsController', () => {
       );
       expect(service.createPaymentUrl).toHaveBeenCalledWith(
         payment,
-        '52.41.36.82',
+        '127.0.0.1',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
@@ -108,7 +108,7 @@ describe('PaymentsController', () => {
       jest.spyOn(service, 'createPayment').mockResolvedValue(payment);
 
       const req = {
-        headers: { 'x-forwarded-for': '52.41.36.82' },
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         connection: { remoteAddress: null },
         socket: { remoteAddress: null },
         ip: null,
@@ -146,7 +146,7 @@ describe('PaymentsController', () => {
       jest.spyOn(service, 'createPayment').mockRejectedValue(error);
 
       const req = {
-        headers: { 'x-forwarded-for': '52.41.36.82' },
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         connection: { remoteAddress: null },
         socket: { remoteAddress: null },
         ip: null,
@@ -179,7 +179,7 @@ describe('PaymentsController', () => {
       jest.spyOn(service, 'createPayment').mockRejectedValue(error);
 
       const req = {
-        headers: { 'x-forwarded-for': '52.41.36.82' },
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         connection: { remoteAddress: null },
         socket: { remoteAddress: null },
         ip: null,
@@ -212,7 +212,7 @@ describe('PaymentsController', () => {
       jest.spyOn(service, 'createPayment').mockRejectedValue(error);
 
       const req = {
-        headers: { 'x-forwarded-for': '52.41.36.82' },
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         connection: { remoteAddress: null },
         socket: { remoteAddress: null },
         ip: null,

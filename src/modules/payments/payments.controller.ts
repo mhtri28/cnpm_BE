@@ -65,7 +65,7 @@ export class PaymentsController {
         req.connection.remoteAddress ||
         req.socket.remoteAddress ||
         req.ip ||
-        '52.41.36.82';
+        '127.0.0.1';
 
       // Tạo URL thanh toán
       const paymentUrl = await this.paymentsService.createPaymentUrl(
