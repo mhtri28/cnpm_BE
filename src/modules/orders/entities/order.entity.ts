@@ -64,14 +64,14 @@ export class Order {
     description: 'Timestamp when the order was created',
     type: Date,
   })
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
   @ApiProperty({
     description: 'Timestamp when the order was last updated',
     type: Date,
   })
-  @UpdateDateColumn({ nullable: true })
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updatedAt: Date;
 
   @ApiProperty({

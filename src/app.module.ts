@@ -58,6 +58,7 @@ config();
       ],
       synchronize: false,
       logging: true,
+      timezone: 'Asia/Ho_Chi_Minh',
     }),
     SupplierModule,
     EmployeesModule,
